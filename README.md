@@ -6,6 +6,7 @@ Research Papers: \
 Development Software Required: \
 [Anaconda Python Distribution](https://repo.anaconda.com/archive/Anaconda3-2020.02-Windows-x86_64.exe) \
 [Visual Studio Code](https://aka.ms/win32-x64-user-stable) \
+[Pandas in Anaconda](https://anaconda.org/anaconda/pandas) \
 \
 Libraries: \
 [Tkinter](https://realpython.com/python-gui-tkinter/) \
