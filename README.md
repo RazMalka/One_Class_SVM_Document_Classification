@@ -1,4 +1,3 @@
-# SVM-DC
 ![OCSVM](https://ars.els-cdn.com/content/image/1-s2.0-S0031320314002751-gr1.jpg) \
 \
 Research Papers: \
