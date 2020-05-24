@@ -1,4 +1,6 @@
 # SVM-DC
+![OCSVM](https://ars.els-cdn.com/content/image/1-s2.0-S0031320314002751-gr1.jpg) \
+\
 Research Papers: \
 [One-Class SVMs for Document Classification (Larry M. Manevitz, Malik Yousef)](http://www.jmlr.org/papers/volume2/manevitz01a/manevitz01a.pdf) \
 \
