@@ -95,10 +95,14 @@ def configureRootContent(root: tk.Toplevel, width: int, height: int):
     label_controlport = tk.Label(text="Control Port", bg="white").place(x=width/16, y=0, in_=leftFrame)
 
     label_algorithm = tk.Label(text="Algorithm:", bg="white").place(x=width/108,y=height/18, in_=leftFrame)
-    combobox_algorithm = ttk.Combobox(width=int(width/54)).place(x=width/108, y=height/10, in_=leftFrame)
+    combobox_algorithm = ttk.Combobox(width=int(width/54), values=["-", "Scholkopf", "Outlier-SVM"])
+    combobox_algorithm.current(0)
+    combobox_algorithm.place(x=width/108, y=height/10, in_=leftFrame)
 
     label_data = tk.Label(text="Data:", bg="white").place(x=width/108,y=height/6, in_=leftFrame)
-    combobox_data = ttk.Combobox(width=int(width/54)).place(x=width/108, y=height/4.8, in_=leftFrame)
+    combobox_data = ttk.Combobox(width=int(width/54), values=["-", "Document A", "Document B"])
+    combobox_data.current(0)
+    combobox_data.place(x=width/108, y=height/4.8, in_=leftFrame)
     
     # -------------------------------------------------------------------
     # Right Frame (View Port)
@@ -109,9 +113,10 @@ def configureRootContent(root: tk.Toplevel, width: int, height: int):
     f = Figure(figsize=(5,5), dpi=100)
     a = f.add_subplot(111)
 
-    a.plot([5,6,7,8],[8,9,3,5], 'ro')
-    a.plot([1,2,3,4],[5,6,1,3], 'go')
-    a.plot([5,6],[8,9], 'bx')
+    a.plot([5,6,7,8],[8,9,3,5], 'ro', label="point A")
+    a.plot([1,2,3,4],[5,6,1,3], 'go', label="point B")
+    a.plot([5,6],[8,9], 'bx', label="point C")
+    a.legend(loc="upper left")
 
     canvas = FigureCanvasTkAgg(f, rightFrame)
     canvas.draw()
