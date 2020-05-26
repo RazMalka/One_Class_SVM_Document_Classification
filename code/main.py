@@ -108,7 +108,10 @@ def configureRootContent(root: tk.Toplevel, width: int, height: int):
     # Figure
     f = Figure(figsize=(5,5), dpi=100)
     a = f.add_subplot(111)
-    a.plot([1,2,3,4,5,6,7,8],[5,6,1,3,8,9,3,5])
+
+    a.plot([5,6,7,8],[8,9,3,5], 'ro')
+    a.plot([1,2,3,4],[5,6,1,3], 'go')
+    a.plot([5,6],[8,9], 'bx')
 
     canvas = FigureCanvasTkAgg(f, rightFrame)
     canvas.draw()
