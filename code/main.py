@@ -29,7 +29,7 @@ def aboutWindow(root: tk.Toplevel):
     about = createWindow(400, 180, "About", root)
 
     # About Window Content
-    title = tk.Label(master=about, text="\nOne-Class SVM Document Classification\nVersion 0.01", bg="white").pack()
+    title = tk.Label(master=about, text="\nOne-Class SVM Document Classification\nVersion 0.02", bg="white").pack()
     repository_link = tk.Label(master=about, text = "Open Source Repository", fg="Blue", cursor="hand2", bg="white")
     repository_link.bind("<Button-1>", lambda e: browser.open_new("https://github.com/RazMalka/SVM-DC"))
     footer = tk.Label(master=about, text="MIT License © 2020\n\nRaz Malka\tShoham Yamin\tRaz Itzhak Afriat", bg="white")
