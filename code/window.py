@@ -8,15 +8,7 @@
 # GUI
 import tkinter as tk; from tkinter import ttk
 import webbrowser as browser
-
-# Data Analysis Libraries
-import numpy as np
-from scipy import stats
-
-# MatplotLib and Embedding with tkinter
-import matplotlib; matplotlib.use("TkAgg");
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-from matplotlib.figure import Figure; import matplotlib.pyplot as plt;
+import figure
 
 # -------------------------------------------------------------------
 # General Purpose
@@ -62,65 +54,15 @@ def aboutWindow(root: tk.Toplevel):
     about.mainloop()
 
 # -------------------------------------------------------------------
-# Root Window
+# Root Window                                                       -
+# -------------------------------------------------------------------
 
 # -------------------------------------------------------------------
 # Content
 representations = ["-", "Binary", "Frequency", "TF-IDF", "Hadamard"]
 training_sets = ["-", "Harry Potter", "Game of Thrones"]
 
-leftFrame = rightFrame = item_xpos = item_ypos = figure = canvas = toolbar = None
-
-def exampleFigure():
-    global figure, canvas, toolbar
-
-    # Figure
-    figure = Figure(figsize=(5,5), dpi=100)
-    a = figure.add_subplot(111)
-
-    a.plot([5,6,7,8],[8,9,3,5], 'ro', label="point A")
-    a.plot([1,2,3,4],[5,6,1,3], 'go', label="point B")
-    a.plot([5,6],[8,9], 'bx', label="point C")
-    a.legend(loc="upper left")
-
-    canvas = FigureCanvasTkAgg(figure, rightFrame)
-    canvas.draw()
-
-    toolbar = NavigationToolbar2Tk(canvas, rightFrame)
-    toolbar.config(bg="white")
-    toolbar.update()
-    toolbar._message_label.config(bg="white")
-
-    canvas.get_tk_widget().pack(side="bottom", fill="both", expand=True, padx=item_xpos, pady=item_ypos)
-    canvas._tkcanvas.pack(side="top", fill="both", expand=True, padx=item_xpos, pady=item_ypos)
-
-# EDIT ME
-def createFigure():
-    global figure, canvas, toolbar
-
-    # Destroy Previous Canvas
-    canvas.get_tk_widget().destroy()
-    canvas._tkcanvas.destroy()
-
-    # Figure
-    figure = Figure(figsize=(5,5), dpi=100)
-    a = figure.add_subplot(111)
-
-    a.plot([11,8], [8,9], 'ro', label="BBB")
-    a.plot([1,4], [5,3], 'go', label="AAA")
-    a.plot([11,4], [8,3], 'bx', label="CCC")
-    a.legend(loc="upper left")
-
-    canvas = FigureCanvasTkAgg(figure, rightFrame)
-    canvas.draw()
-
-    toolbar = NavigationToolbar2Tk(canvas, rightFrame)
-    toolbar.config(bg="white")
-    toolbar.update()
-    toolbar._message_label.config(bg="white")
-    
-    canvas.get_tk_widget().pack(side="bottom", fill="both", expand=True, padx=item_xpos, pady=item_ypos)
-    canvas._tkcanvas.pack(side="top", fill="both", expand=True, padx=item_xpos, pady=item_ypos)
+leftFrame = rightFrame = item_xpos = item_ypos = None
 
 def initRootFrames(root: tk.Toplevel, width: int, height: int):
     global leftFrame, rightFrame, item_xpos, item_ypos
@@ -147,7 +89,7 @@ def initControlPort(root: tk.Toplevel, width: int, height: int):
 
 def initViewPort(root: tk.Toplevel, width: int, height: int):
     label_viewport = tk.Label(text="View Port", bg="white").place(x=33 * item_xpos, y=0, in_=rightFrame)
-    exampleFigure()
+    figure.exampleFigure(rightFrame, item_xpos, item_ypos)
 
 def contentEventHandlers(root: tk.Toplevel, width: int, height: int):
     print("Event Handlers")
@@ -173,7 +115,7 @@ def initMenuItems(root: tk.Toplevel, menu: tk.Menu, options_menu: tk.Menu, help_
     menu.add_cascade(label="Help", menu=help_menu)
 
     # Init Sub Items
-    options_menu.add_command(label="Test", command=lambda: createFigure())
+    options_menu.add_command(label="Test", command=lambda: figure.createFigure(rightFrame, item_xpos, item_ypos))
     options_menu.add_command(label="Quit", command=lambda: destroyAll(root))
 
     help_menu.add_command(label="v0.02", command=lambda: testFunc("test"))
