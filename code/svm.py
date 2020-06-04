@@ -4,4 +4,3 @@
 
 # This file is meant to provide implementation to svm versions appropriate
 # for one-class classification in the context of information retrieval.
-
