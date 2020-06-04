@@ -14,7 +14,6 @@ Libraries: \
 [NumPy](https://www.guru99.com/numpy-tutorial.html) \
 [SciPy](https://www.guru99.com/scipy-tutorial.html) \
 [Pandas](https://www.geeksforgeeks.org/pandas-tutorial/) \
-[Seaborn](https://www.datacamp.com/community/tutorials/seaborn-python-tutorial) \
 [MatplotLib](https://realpython.com/python-matplotlib-guide/) \
 \
 Handbooks and Tutorials: \
