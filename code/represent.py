@@ -17,11 +17,13 @@ special = [".", ",", "’", "“", "”", "—", "?", "!", "|", "page", "chapter
 def opendoc(filename: str):
     return open(file="docs/" + filename + ".txt", mode='r', encoding="utf8").read()
 
-def remove_stopwords(text: str):
+def remove_specials(text: str):
     text = text.lower()
     for w in special:
         text = text.replace(w, "")
-
+    return text
+    
+def remove_stopwords(text: str):
     stop_words = set(stopwords.words('english'))
     word_tokens = word_tokenize(text)
     filtered_text = [w for w in word_tokens if not w in stop_words]
@@ -31,6 +33,9 @@ def remove_stopwords(text: str):
         if w not in stop_words: 
             filtered_text.append(w)
     return filtered_text
+
+#def remove_prefixes_suffixes(text: str):
+#TODO
 
 def frequencies(text: list, m: int):   
     # Pass the split_it list to instance of Counter class. 
@@ -62,8 +67,10 @@ def r_hadamard(filename: str):
     print("D")
 
 def main():
-    text = opendoc("Book 1 - The Philosopher's Stone (A)") # All Files Should Be 'Scanned'
+    text = opendoc("Book 1 - The Philosopher's Stone (A)") # All Files Should Be 'Scanned' automatically
+    text = remove_specials(text)
     text = remove_stopwords(text)
+    #text = remove_prefixes_suffixes(text)
     frequency = frequencies(text, 200)
     print(frequency)
 

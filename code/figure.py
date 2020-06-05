@@ -17,14 +17,14 @@ figure = canvas = toolbar = None
 def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int):
     global figure, canvas, toolbar
 
-    # Destroy Previous Canvas
+    # Destroy Previous Figure
     canvas.get_tk_widget().destroy()
     canvas._tkcanvas.destroy()
+    toolbar.destroy()
 
     # Figure
     figure = Figure(figsize=(5,5), dpi=100)
     a = figure.add_subplot(111)
-
     a.plot([11,8], [8,9], 'ro', label="BBB")
     a.plot([1,4], [5,3], 'go', label="AAA")
     a.plot([11,4], [8,3], 'bx', label="CCC")
