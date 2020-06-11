@@ -3,8 +3,9 @@
 # Research Subject  ->  One-Class SVMs for Document Classification
 
 # This file is meant to represent simple constants for the whole system
+from enum import Enum
 
-version = "v0.08"
+version = "v0.09"
 
 # MAIN
 root_title = "One-Class SVMs for Document Classification - G2"
@@ -51,3 +52,11 @@ books = [
 'Book 24 - Meteor-Men of Mars (F)',
 'Book 25 - Pied Piper of Mars (F)',
 'Book 26 - Stellar Showboat (F)']
+
+class BookSet(Enum):
+    HARRY_POTTER = 1
+    GAME_OF_THRONES = 2
+    THE_HUNGER_GAMES = 3
+    GODS_OF_SPACE = 4
+    FORSYTE_SAGA = 5
+    CHILD_OF_THE_SUN = 6

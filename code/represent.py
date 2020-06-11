@@ -12,6 +12,8 @@ from nltk.stem import LancasterStemmer
 # Data Analysis Libraries
 from collections import Counter
 import numpy as np
+import time
+start_time = time.time()
 
 def opendoc(filename: str):
     return open(file="docs/" + filename + ".txt", mode='r', encoding="utf8").read()
@@ -55,7 +57,7 @@ def frequencies(text: list, m: int):
     # most_common() produces k frequently encountered 
     # input values and their respective counts. 
     most_occur = counter.most_common(m)
-    return most_occur
+    return [item[0] for item in most_occur]
 
 #
 def r_binary(filename: str):
@@ -77,8 +79,11 @@ def r_hadamard(filename: str):
     file = opendoc(filename)
     print("D")
 
-def main():
-    text = opendocs(const.books[1:7])
+def complement_list(except_files: list):
+    return [x for x in const.books if x not in except_files]
+
+def get_set(books: list):
+    text = opendocs(books)
     text = text.lower()
     text = remove_specials(text)
     text = remove_prefixes_suffixes(text)
@@ -86,6 +91,30 @@ def main():
     text = remove_stopwords(text)
     frequency = frequencies(text, 20)
     print(frequency)
+    print("GET_SET Process finished --- %.6s seconds ---" % (time.time() - start_time))
+
+    # Needs to return only list of words
+    # Here will also get type of representation and take care of it accordingly
+    return frequency
+
+def get_trainset(bookSet: int):
+    if (bookSet == const.BookSet.HARRY_POTTER):
+        return get_set(const.books[1:2])
+    if (bookSet == const.BookSet.GAME_OF_THRONES):
+        return get_set(const.books[8:9])
+    return None
+
+"""
+def get_testset(bookSet: int):
+    if (bookSet == const.BookSet.HARRY_POTTER):
+        return get_set(const.books[1:2])
+    if (bookSet == const.BookSet.GAME_OF_THRONES):
+        return get_set(const.books[8:9])
+    return None
+"""
+
+def main():
+    get_trainset(const.BookSet.HARRY_POTTER)
 
 if __name__ == "__main__":
     main()
