@@ -7,13 +7,13 @@
 
 # -------------------------------------------------------------------
 # Imports
-
+import const
 import window
 
 def main():
-    width = 720 ; height = 588
+    width = const.root_width ; height = const.root_height
     # Create Root Window
-    root = window.createWindow(width, height, "One-Class SVMs for Document Classification - G2", None)
+    root = window.createWindow(width, height, const.root_title, None)
     
     # Configure Root Window
     window.configureRootMenu(root)

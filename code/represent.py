@@ -4,22 +4,26 @@
 
 # This file is meant to provide implementation of required representations
 # Binary, Frequency, TF-IDF, Hadamard
+import const
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
+from nltk.stem import LancasterStemmer
 
 # Data Analysis Libraries
 from collections import Counter
 import numpy as np
-from scipy import stats
-
-special = [".", ",", "’", "“", "”", "—", "?", "!", "|", "page", "chapter", "-", ";", ":"]
 
 def opendoc(filename: str):
     return open(file="docs/" + filename + ".txt", mode='r', encoding="utf8").read()
 
+def opendocs(filenames: list):
+    text = ""
+    for filename in filenames:
+        text = text + opendoc(filename)
+    return text
+
 def remove_specials(text: str):
-    text = text.lower()
-    for w in special:
+    for w in const.special:
         text = text.replace(w, "")
     return text
     
@@ -34,8 +38,15 @@ def remove_stopwords(text: str):
             filtered_text.append(w)
     return filtered_text
 
-#def remove_prefixes_suffixes(text: str):
-#TODO
+def remove_prefixes_suffixes(text: str): #slow
+    word_tokens = word_tokenize(text)
+    filtered_text = []
+    
+    stemmer = LancasterStemmer()
+    for w in word_tokens:
+        w = stemmer.stem(w)
+        filtered_text.append(w)
+    return str(filtered_text)
 
 def frequencies(text: list, m: int):   
     # Pass the split_it list to instance of Counter class. 
@@ -67,11 +78,13 @@ def r_hadamard(filename: str):
     print("D")
 
 def main():
-    text = opendoc("Book 1 - The Philosopher's Stone (A)") # All Files Should Be 'Scanned' automatically
+    text = opendocs(const.books[1:7])
+    text = text.lower()
+    text = remove_specials(text)
+    text = remove_prefixes_suffixes(text)
     text = remove_specials(text)
     text = remove_stopwords(text)
-    #text = remove_prefixes_suffixes(text)
-    frequency = frequencies(text, 200)
+    frequency = frequencies(text, 20)
     print(frequency)
 
 if __name__ == "__main__":

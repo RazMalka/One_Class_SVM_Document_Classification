@@ -4,7 +4,7 @@
 
 # This file is meant to provide implementation of gui windows
 # including graphical presentation, controllers and handlers
-
+import const
 # GUI
 import tkinter as tk; from tkinter import ttk
 import webbrowser as browser
@@ -38,13 +38,13 @@ def testFunc(str: str):
 # -------------------------------------------------------------------
 # About Window
 def aboutWindow(root: tk.Toplevel):
-    about = createWindow(400, 180, "About", root)
+    about = createWindow(const.about_width, const.about_height, const.about_title, root)
 
     # About Window Content
-    title = tk.Label(master=about, text="\nOne-Class SVM Document Classification\nVersion 0.05", bg="white").pack()
+    header = tk.Label(master=about, text=const.about_header, bg="white").pack()
     repository_link = tk.Label(master=about, text = "Open Source Repository", fg="Blue", cursor="hand2", bg="white")
-    repository_link.bind("<Button-1>", lambda e: browser.open_new("https://github.com/RazMalka/SVM-DC"))
-    footer = tk.Label(master=about, text="MIT License © 2020\n\nRaz Malka\tShoham Yamin\tRaz Itzhak Afriat", bg="white")
+    repository_link.bind("<Button-1>", lambda e: browser.open_new(const.repository_link))
+    footer = tk.Label(master=about, text=const.about_footer, bg="white")
 
     # Pack Content into About Window
     repository_link.pack()
@@ -59,10 +59,12 @@ def aboutWindow(root: tk.Toplevel):
 
 # -------------------------------------------------------------------
 # Content
-representations = ["-", "Binary", "Frequency", "TF-IDF", "Hadamard"]
-training_sets = ["-", "Harry Potter", "Game of Thrones"]
 
-leftFrame = rightFrame = item_xpos = item_ypos = None
+leftFrame = rightFrame = item_xpos = item_ypos = combobox_rep = combobox_ts = None
+
+def run_onclick():
+    global combobox_rep, combobox_ts
+    figure.createFigure(rightFrame, item_xpos, item_ypos) # CHANGE THIS TO GET PARAMETERS
 
 def initRootFrames(root: tk.Toplevel, width: int, height: int):
     global leftFrame, rightFrame, item_xpos, item_ypos
@@ -73,14 +75,16 @@ def initRootFrames(root: tk.Toplevel, width: int, height: int):
     rightFrame = tk.Frame(master=root, bg="white")
 
 def initControlPort(root: tk.Toplevel, width: int, height: int):
+    global combobox_rep, combobox_ts
+
     label_controlport = tk.Label(text="Control Port", bg="white").place(x=6.75 * item_xpos, y=0, in_=leftFrame)
 
     label_rep = tk.Label(text="Representation:", bg="white").place(x=item_xpos,y=height/18, in_=leftFrame)
     label_ts = tk.Label(text="Training Set:", bg="white").place(x=item_xpos,y=height/6, in_=leftFrame)
 
-    combobox_rep = ttk.Combobox(width=int(2 * item_xpos), values=representations, state="readonly")
-    combobox_ts = ttk.Combobox(width=int(2 * item_xpos), values=training_sets, state="readonly")
-    button_run = ttk.Button(width=int(2* item_xpos), text="Run")
+    combobox_rep = ttk.Combobox(width=int(2 * item_xpos), values=const.representations, state="readonly")
+    combobox_ts = ttk.Combobox(width=int(2 * item_xpos), values=const.training_sets, state="readonly")
+    button_run = ttk.Button(width=int(2 * item_xpos), text="Run", command=lambda: run_onclick())
 
     combobox_rep.current(0)
     combobox_ts.current(0)
@@ -120,8 +124,8 @@ def initMenuItems(root: tk.Toplevel, menu: tk.Menu, options_menu: tk.Menu, help_
     options_menu.add_command(label="Test", command=lambda: figure.createFigure(rightFrame, item_xpos, item_ypos))
     options_menu.add_command(label="Quit", command=lambda: destroyAll(root))
 
-    help_menu.add_command(label="v0.05")
-    help_menu.entryconfig("v0.05", state="disabled")
+    help_menu.add_command(label=const.version)
+    help_menu.entryconfig(const.version, state="disabled")
     help_menu.add_separator()
     help_menu.add_command(label="About", command=lambda: aboutWindow(root))
     
