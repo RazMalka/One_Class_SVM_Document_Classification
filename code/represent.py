@@ -16,7 +16,7 @@ import time
 start_time = time.time()
 
 def opendoc(filename: str):
-    return open(file="docs/" + filename + ".txt", mode='r', encoding="utf8").read()
+    return open(file="docs/" + filename, mode='r', encoding="utf8").read()
 
 def opendocs(filenames: list):
     text = ""
@@ -59,10 +59,63 @@ def frequencies(text: list, m: int):
     most_occur = counter.most_common(m)
     return [item[0] for item in most_occur]
 
-#
-def r_binary(filename: str):
-    text = opendoc(filename)
-    print("A")
+# --------------------------------------------------------------------------------------
+# Take Care of Books and Text
+def purifyText(text: str):
+    text = text.lower()
+    text = remove_specials(text)
+    text = remove_prefixes_suffixes(text)
+    text = remove_specials(text)
+    text = remove_stopwords(text)
+    return text
+
+def getBook(book: str):
+    text = opendoc(book)
+    return purifyText(text)
+
+def getBooks(books: list):
+    text = opendocs(books)
+    return purifyText(text)
+
+def getBookKeywords(book: str):
+    text = getBook(book)
+    frequent = frequencies(text, const.m)
+    print("GET_SET Process finished --- %.6s seconds ---" % (time.time() - start_time))
+    return frequent
+
+def getBookSetKeywords(books: list):
+    text = getBooks(books)
+    frequent = frequencies(text, const.m)
+    print("GET_SET Process finished --- %.6s seconds ---" % (time.time() - start_time))
+    return frequent
+
+def getTrainSet(bookSet: int):
+    if (bookSet == const.BookSet.HARRY_POTTER):
+        return const.books[0:53] # 214
+    if (bookSet == const.BookSet.GAME_OF_THRONES):
+        return const.books[214:242] # 111
+    return []
+
+# Get Keywords according to a predefined training set
+def getTrainSetKeywords(bookSet: int):
+    return getBookSetKeywords(getTrainSet(bookSet))
+
+# --------------------------------------------------------------------------------------
+# Representations
+def r_binary(keywords: list, books: list):
+    test_keywords = []
+    for i in range(len(books)):
+        test_keywords.append([0] * const.m)
+
+    i = 0
+    test_books = books
+    while i < len(books):
+        book = getBook(test_books[i])
+        for j in range(const.m):
+            if (keywords[j] in book):
+                test_keywords[i][j] = 1
+        i += 1
+    return test_keywords
 
 #
 def r_frequency(filename: str):
@@ -79,42 +132,8 @@ def r_hadamard(filename: str):
     file = opendoc(filename)
     print("D")
 
-def complement_list(except_files: list):
-    return [x for x in const.books if x not in except_files]
-
-def get_set(books: list):
-    text = opendocs(books)
-    text = text.lower()
-    text = remove_specials(text)
-    text = remove_prefixes_suffixes(text)
-    text = remove_specials(text)
-    text = remove_stopwords(text)
-    frequency = frequencies(text, 20)
-    print(frequency)
-    print("GET_SET Process finished --- %.6s seconds ---" % (time.time() - start_time))
-
-    # Needs to return only list of words
-    # Here will also get type of representation and take care of it accordingly
-    return frequency
-
-def get_trainset(bookSet: int):
-    if (bookSet == const.BookSet.HARRY_POTTER):
-        return get_set(const.books[1:2])
-    if (bookSet == const.BookSet.GAME_OF_THRONES):
-        return get_set(const.books[8:9])
-    return None
-
-"""
-def get_testset(bookSet: int):
-    if (bookSet == const.BookSet.HARRY_POTTER):
-        return get_set(const.books[1:2])
-    if (bookSet == const.BookSet.GAME_OF_THRONES):
-        return get_set(const.books[8:9])
-    return None
-"""
-
 def main():
-    get_trainset(const.BookSet.HARRY_POTTER)
+    print(const.books[0:2])
 
 if __name__ == "__main__":
     main()

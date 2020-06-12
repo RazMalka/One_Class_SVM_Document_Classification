@@ -60,11 +60,11 @@ def aboutWindow(root: tk.Toplevel):
 # -------------------------------------------------------------------
 # Content
 
-leftFrame = rightFrame = item_xpos = item_ypos = combobox_rep = combobox_ts = None
+leftFrame = rightFrame = item_xpos = item_ypos = combobox_rep = combobox_kernel = None
 
 def run_onclick():
-    global combobox_rep, combobox_ts
-    figure.createFigure(rightFrame, item_xpos, item_ypos) # CHANGE THIS TO GET PARAMETERS
+    global combobox_rep
+    figure.createFigure(rightFrame, item_xpos, item_ypos, combobox_rep.get(), combobox_kernel.get()) # CHANGE THIS TO GET PARAMETERS
 
 def initRootFrames(root: tk.Toplevel, width: int, height: int):
     global leftFrame, rightFrame, item_xpos, item_ypos
@@ -75,27 +75,27 @@ def initRootFrames(root: tk.Toplevel, width: int, height: int):
     rightFrame = tk.Frame(master=root, bg="white")
 
 def initControlPort(root: tk.Toplevel, width: int, height: int):
-    global combobox_rep, combobox_ts
+    global combobox_rep, combobox_kernel
 
     label_controlport = tk.Label(text="Control Port", bg="white").place(x=6.75 * item_xpos, y=0, in_=leftFrame)
 
     label_rep = tk.Label(text="Representation:", bg="white").place(x=item_xpos,y=height/18, in_=leftFrame)
-    label_ts = tk.Label(text="Training Set:", bg="white").place(x=item_xpos,y=height/6, in_=leftFrame)
+    label_kernel = tk.Label(text="Kernel Type:", bg="white").place(x=item_xpos,y=height/6, in_=leftFrame)
 
     combobox_rep = ttk.Combobox(width=int(2 * item_xpos), values=const.representations, state="readonly")
-    combobox_ts = ttk.Combobox(width=int(2 * item_xpos), values=const.training_sets, state="readonly")
+    combobox_kernel = ttk.Combobox(width=int(2 * item_xpos), values=const.kernel_types, state="readonly")
     button_run = ttk.Button(width=int(2 * item_xpos), text="Run", command=lambda: run_onclick())
 
     combobox_rep.current(0)
-    combobox_ts.current(0)
+    combobox_kernel.current(0)
 
     combobox_rep.place(x=item_xpos, y=height/10, in_=leftFrame)
-    combobox_ts.place(x=item_xpos, y=height/4.8, in_=leftFrame)
+    combobox_kernel.place(x=item_xpos, y=height/4.8, in_=leftFrame)
     button_run.place(x=item_xpos, y=height/3.2, in_=leftFrame)
 
 def initViewPort(root: tk.Toplevel, width: int, height: int):
-    label_viewport = tk.Label(text="View Port", bg="white").place(x=33 * item_xpos, y=0, in_=rightFrame)
-    figure.exampleFigure(rightFrame, item_xpos, item_ypos)
+    label_viewport = tk.Label(text="View Port", bg="white").place(x=36.3 * item_xpos, y=0, in_=rightFrame)
+    figure.emptyFigure(rightFrame, item_xpos, item_ypos)
 
 def contentEventHandlers(root: tk.Toplevel, width: int, height: int):
     print("Event Handlers") # Should Have Action on Button 'Run'
@@ -121,7 +121,6 @@ def initMenuItems(root: tk.Toplevel, menu: tk.Menu, options_menu: tk.Menu, help_
     menu.add_cascade(label="Help", menu=help_menu)
 
     # Init Sub Items
-    options_menu.add_command(label="Test", command=lambda: figure.createFigure(rightFrame, item_xpos, item_ypos))
     options_menu.add_command(label="Quit", command=lambda: destroyAll(root))
 
     help_menu.add_command(label=const.version)

@@ -3,6 +3,8 @@
 # Research Subject  ->  One-Class SVMs for Document Classification
 
 # This file is meant to provide implementation of graphical figures
+import represent
+import const
 
 # GUI
 import tkinter as tk; from tkinter import ttk
@@ -11,12 +13,23 @@ import tkinter as tk; from tkinter import ttk
 import matplotlib; matplotlib.use("TkAgg");
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.figure import Figure; import matplotlib.pyplot as plt; import matplotlib.font_manager
+
+# TSNE and SVM
 from sklearn.svm import OneClassSVM; import numpy as np
+from sklearn.manifold import TSNE
+from sklearn.preprocessing import normalize
+
+from collections import Counter
 
 figure = canvas = toolbar = None
 
-def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int):
+def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, representation: str, kernel_type: str):
     global figure, canvas, toolbar
+
+    # Validity Test
+    if representation not in ["Binary"] or kernel_type not in ["Linear", "Radial"]:
+        print("Unimplemented!")
+        return False
 
     # Destroy Previous Figure
     canvas.get_tk_widget().destroy()
@@ -25,127 +38,84 @@ def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int):
     figure.clf()
 
     # Define "classifiers" to be used
-    classifiers = {"One-Class SVM": OneClassSVM(nu=0.25, kernel="rbf", gamma=0.35)}
+    if kernel_type == "Linear":
+        classifiers = {"One-Class SVM": OneClassSVM(nu=0.1, kernel="linear", gamma=0.1)}    # OPTIMIZED AS OF BINARY
+    else:
+        classifiers = {"One-Class SVM": OneClassSVM(nu=0.05, kernel="rbf", gamma=0.01)}     # NOT OPTIMIZED YET
     colors = ['m', 'g', 'b']; legend1 = {}; legend2 = {}
 
-    # Get data
-    x_train = np.array([[2,2],[2,2.5],[2,3], [2,3.5], [3, 1.5], [2.5, 1.5], [2,3], [7,6]]) # two clusters
-    x_test  = np.array([[1.5,1.5], [5,5]])
+    precalculated_flag = 1  # A flag allowing use of precalculated data - Make Controller of this flag
 
+    if representation == "Binary":
+        if precalculated_flag == 0:
+            # Get data
+            keywords = represent.getTrainSetKeywords(const.BookSet.HARRY_POTTER)
+            #print("KEYWORDS: ", keywords)
+            
+            train = represent.r_binary(keywords, represent.getTrainSet(const.BookSet.HARRY_POTTER))
+            test = represent.r_binary(keywords, const.books[180:240]) # 34 HP books (GREEN), 26 GOT books (RED)
+            # Get data
+            x_train = np.array(train)
+            x_test  = np.array(test)
+        else:
+            keywords = const.binary_keywords
+            x_train = const.binary_x_train
+            x_test = const.binary_x_test
+
+    # TSNE is responsibly to downscale the dataset from m dimension to n dimension
+    tsne = TSNE(n_components=2, perplexity=25, learning_rate=10)
     # Learn a frontier for outlier detection with several classifiers
-    xx1, yy1 = np.meshgrid(np.linspace(0, 6, 500), np.linspace(1, 4.5, 500))
+    xx1, yy1 = np.meshgrid(np.linspace(-15, 15, 500), np.linspace(-15, 15, 500))
     for i, (clf_name, clf) in enumerate(classifiers.items()):
         figure = plt.figure(1)
+        x_train = tsne.fit_transform(x_train) / 2
+        x_test  = tsne.fit_transform(x_test) / 2
         y_train = clf.fit_predict(x_train)
         y_test = clf.predict(x_test)
-        Z1 = clf.decision_function(np.c_[xx1.ravel(), yy1.ravel()])
+        x_pred = np.array([xx1.ravel(), yy1.ravel()]).T #+ [np.repeat(0, xx1.ravel().size) for _ in range(3 - 2)]).T
+        Z1 = clf.decision_function(x_pred)
         Z1 = Z1.reshape(xx1.shape)
-        legend1[clf_name] = plt.contour(
-            xx1, yy1, Z1, levels=[0], linewidths=2, colors=colors[i])
+        legend1[clf_name] = plt.contour(xx1, yy1, Z1, levels=[0], linewidths=2, colors=colors[i])
+
+    #print("PREDICT TRAIN ", y_train)
+    #print("PREDICT TEST ", y_test)
+
+    common_train_value = Counter(y_train).most_common(1)[0][0]  # MOST COMMON VALUE IN TRAIN LABELS
+
+    #print("TRAIN:   ", Counter(y_train).most_common(1)[0], " out of ", len(x_train))
+    #print("TEST:    ", Counter(y_test).most_common(1)[0], " out of 34 / ", len(x_test))
+
+    positive_tests = np.array([])   # INIT NUMPY NDARRAY
+    negative_tests = np.array([])   # INIT NUMPY NDARRAY
+
+    for i, w in enumerate(x_test):
+        if y_test[i] == common_train_value:
+            positive_tests = np.append(positive_tests,w)
+        else:
+            negative_tests = np.append(negative_tests,w)
+    # Reshape 1D ndarray into 2D ndarray
+    positive_tests = np.reshape(positive_tests, (-1, 2))
+    negative_tests = np.reshape(negative_tests, (-1, 2))
 
     legend1_values_list = list(legend1.values())
     legend1_keys_list = list(legend1.keys())
 
     # Plot the results (= shape of the data points cloud)
     plt.figure(1)  # two clusters
-    plt.title("Outlier detection on a real data set")
+    plt.title("Document Classification using One-Class SVM on Real Books Data Set")
     plt.scatter(x_train[:, 0], x_train[:, 1], color='black')
-    plt.scatter(x_test[:, 0], x_test[:, 1], color='blue')
-    bbox_args = dict(boxstyle="round", fc="0.8")
-    arrow_args = dict(arrowstyle="->")
-    plt.annotate("outlying points", xy=(6, 2),
-                xycoords="data", textcoords="data",
-                xytext=(0, 0.4), bbox=bbox_args, arrowprops=arrow_args)
-    plt.xlim((xx1.min(), xx1.max() + 2))
-    plt.ylim((yy1.min(), yy1.max() + 2))
-    #plt.xlim(0, 8)
-    #plt.ylim(0, 8)
-    plt.legend(([legend1_values_list[0].collections[0]]),   #FIX
-            ([legend1_keys_list[0]]), #FIX
-            loc="upper left",
-            prop=matplotlib.font_manager.FontProperties(size=11))
-    plt.ylabel("Y Axis"); plt.xlabel("X Axis")
-    canvas = FigureCanvasTkAgg(figure, rightFrame); canvas.draw()
-
-    toolbar = NavigationToolbar2Tk(canvas, rightFrame)
-    toolbar.config(bg="white")
-    toolbar.update()
-    toolbar._message_label.config(bg="white")
-
-    canvas.get_tk_widget().pack(side="bottom", fill="both", expand=True, padx=item_xpos, pady=item_ypos)
-    canvas._tkcanvas.pack(side="top", fill="both", expand=True, padx=item_xpos, pady=item_ypos)
-"""
-def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int):
-    global figure, canvas, toolbar
-
-    # Destroy Previous Figure
-    canvas.get_tk_widget().destroy()
-    canvas._tkcanvas.destroy()
-    toolbar.destroy()
-
-    # Figure
-    figure = Figure(figsize=(5,5), dpi=100)
-    a = figure.add_subplot(111)
-    a.plot([11,8], [8,9], 'ro', label="BBB")
-    a.plot([1,4], [5,3], 'go', label="AAA")
-    a.plot([11,4], [8,3], 'bx', label="CCC")
-    a.legend(loc="upper left")
-
-    canvas = FigureCanvasTkAgg(figure, rightFrame)
-    canvas.draw()
-
-    toolbar = NavigationToolbar2Tk(canvas, rightFrame)
-    toolbar.config(bg="white")
-    toolbar.update()
-    toolbar._message_label.config(bg="white")
+    plt.scatter(x_test[0:34, 0], x_test[0:34, 1], color='green')                        # DATA CORRESPONDING TO DEFAULT TRAINING SET - HARRY POTTER
+    plt.scatter(x_test[34:len(x_test), 0], x_test[34:len(x_test), 1], color='red')      # DATA THAT SHOULD BE DETECTED AS AN OUTLIER - GAME OF THRONES
     
-    canvas.get_tk_widget().pack(side="bottom", fill="both", expand=True, padx=item_xpos, pady=item_ypos)
-    canvas._tkcanvas.pack(side="top", fill="both", expand=True, padx=item_xpos, pady=item_ypos)
-"""
-def exampleFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int):
-    global figure, canvas, toolbar
-
-    # Define "classifiers" to be used
-    classifiers = {"One-Class SVM": OneClassSVM(nu=0.25, kernel="rbf", gamma=0.35)}
-    colors = ['m', 'g', 'b']; legend1 = {}; legend2 = {}
-
-    # Get data
-    x_train = np.array([[2,2],[2,2.5],[2,3], [2,3.5], [3, 1.5], [2.5, 1.5], [2,3], [7,6]]) # two clusters
-    x_test  = np.array([[1.5,1.5], [5,5]])
-
-    # Learn a frontier for outlier detection with several classifiers
-    xx1, yy1 = np.meshgrid(np.linspace(0, 6, 500), np.linspace(1, 4.5, 500))
-    for i, (clf_name, clf) in enumerate(classifiers.items()):
-        figure = plt.figure(1)
-        y_train = clf.fit_predict(x_train)
-        y_test = clf.predict(x_test)
-        Z1 = clf.decision_function(np.c_[xx1.ravel(), yy1.ravel()])
-        Z1 = Z1.reshape(xx1.shape)
-        legend1[clf_name] = plt.contour(
-            xx1, yy1, Z1, levels=[0], linewidths=2, colors=colors[i])
-
-    legend1_values_list = list(legend1.values())
-    legend1_keys_list = list(legend1.keys())
-
-    # Plot the results (= shape of the data points cloud)
-    plt.figure(1)  # two clusters
-    plt.title("Outlier detection on a real data set")
-    plt.scatter(x_train[:, 0], x_train[:, 1], color='black')
-    plt.scatter(x_test[:, 0], x_test[:, 1], color='blue')
     bbox_args = dict(boxstyle="round", fc="0.8")
     arrow_args = dict(arrowstyle="->")
-    plt.annotate("outlying points", xy=(6, 2),
-                xycoords="data", textcoords="data",
-                xytext=(0, 0.4), bbox=bbox_args, arrowprops=arrow_args)
-    plt.xlim((xx1.min(), xx1.max() + 2))
-    plt.ylim((yy1.min(), yy1.max() + 2))
-    #plt.xlim(0, 8)
-    #plt.ylim(0, 8)
-    plt.legend(([legend1_values_list[0].collections[0]]),   #FIX
-            ([legend1_keys_list[0]]), #FIX
-            loc="upper left",
-            prop=matplotlib.font_manager.FontProperties(size=11))
-    plt.ylabel("Y Axis"); plt.xlabel("X Axis")
+    
+    #plt.annotate("outlying points", xy=(6, 2), xycoords="data", textcoords="data", xytext=(0, 0.4), bbox=bbox_args, arrowprops=arrow_args)
+    plt.xlim((-10, 10)); plt.ylim((-10, 10))
+    plt.legend(([legend1_values_list[0].collections[0]]), ([legend1_keys_list[0]]), loc="upper left", prop=matplotlib.font_manager.FontProperties(size=11))
+    plt.ylabel(""); plt.xlabel("GREEN - HARRY POTTER vs RED - GAME OF THRONES")
+
+    # Draw and Pack graphical components and controllers
     canvas = FigureCanvasTkAgg(figure, rightFrame); canvas.draw()
 
     toolbar = NavigationToolbar2Tk(canvas, rightFrame)
@@ -156,8 +126,20 @@ def exampleFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int):
     canvas.get_tk_widget().pack(side="bottom", fill="both", expand=True, padx=item_xpos, pady=item_ypos)
     canvas._tkcanvas.pack(side="top", fill="both", expand=True, padx=item_xpos, pady=item_ypos)
 
-def main():
-    createFigure(None, None, None)
+def emptyFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int):
+    global figure, canvas, toolbar
 
-if __name__ == "__main__":
-    main()
+    figure = plt.figure(1)
+    plt.title("Document Classification using One-Class SVM on Real Books Data Set")
+    plt.xlim((-10, 10)); plt.ylim((-10, 10))
+    bbox_args = dict(boxstyle="round", fc="0.8")
+    arrow_args = dict(arrowstyle="->")
+    canvas = FigureCanvasTkAgg(figure, rightFrame); canvas.draw()
+
+    toolbar = NavigationToolbar2Tk(canvas, rightFrame)
+    toolbar.config(bg="white")
+    toolbar.update()
+    toolbar._message_label.config(bg="white")
+
+    canvas.get_tk_widget().pack(side="bottom", fill="both", expand=True, padx=item_xpos, pady=item_ypos)
+    canvas._tkcanvas.pack(side="top", fill="both", expand=True, padx=item_xpos, pady=item_ypos)
