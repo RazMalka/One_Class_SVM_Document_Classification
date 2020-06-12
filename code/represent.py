@@ -11,6 +11,8 @@ from nltk.stem import LancasterStemmer
 
 # Data Analysis Libraries
 from collections import Counter
+from sklearn.feature_extraction.text import TfidfVectorizer
+import pandas as pd
 import numpy as np
 import time
 start_time = time.time()
@@ -77,6 +79,7 @@ def getBooks(books: list):
     text = opendocs(books)
     return purifyText(text)
 
+# For Binary Representation
 def getBookKeywords(book: str):
     text = getBook(book)
     frequent = frequencies(text, const.m)
@@ -89,6 +92,9 @@ def getBookSetKeywords(books: list):
     print("GET_SET Process finished --- %.6s seconds ---" % (time.time() - start_time))
     return frequent
 
+# For TF-IDF Representation
+
+# GENERAL
 def getTrainSet(bookSet: int):
     if (bookSet == const.BookSet.HARRY_POTTER):
         return const.books[0:53] # 214
@@ -123,9 +129,16 @@ def r_frequency(filename: str):
     print("B")
 
 #
-def r_tfidf(filename: str):
-    file = opendoc(filename)
-    print("C")
+def r_tfidf(books: list):
+    vectorizer = TfidfVectorizer()
+
+    booksVector = [str(getBook(b)) for b in books]
+    vectors = vectorizer.fit_transform(booksVector)
+    feature_names = vectorizer.get_feature_names()
+    dense = vectors.todense()
+    denselist = dense.tolist()
+    df = pd.DataFrame(denselist, columns=feature_names)
+    return df.values    # actual conversion to numpy ndarray
 
 #
 def r_hadamard(filename: str):
@@ -133,7 +146,7 @@ def r_hadamard(filename: str):
     print("D")
 
 def main():
-    print(const.books[0:2])
+    print(r_tfidf(getTrainSet(const.BookSet.HARRY_POTTER)))
 
 if __name__ == "__main__":
     main()

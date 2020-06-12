@@ -27,7 +27,7 @@ def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, represent
     global figure, canvas, toolbar
 
     # Validity Test
-    if representation not in ["Binary"] or kernel_type not in ["Linear", "Radial"]:
+    if representation not in ["Binary", "TF-IDF"] or kernel_type not in ["Linear", "Radial"]:
         print("Unimplemented!")
         return False
 
@@ -46,26 +46,39 @@ def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, represent
 
     precalculated_flag = 1  # A flag allowing use of precalculated data - Make Controller of this flag
 
+    testBooks = const.books[180:240] # 34 HP books (GREEN), 26 GOT books (RED)
     if representation == "Binary":
         if precalculated_flag == 0:
-            # Get data
+            print("Calculating Binary Representation's Keywords ... ")
             keywords = represent.getTrainSetKeywords(const.BookSet.HARRY_POTTER)
-            #print("KEYWORDS: ", keywords)
-            
+            print("Calculating Binary Representation of Training Set ... ")
             train = represent.r_binary(keywords, represent.getTrainSet(const.BookSet.HARRY_POTTER))
-            test = represent.r_binary(keywords, const.books[180:240]) # 34 HP books (GREEN), 26 GOT books (RED)
-            # Get data
             x_train = np.array(train)
+            print("Calculating Binary Representation of Testing Set ... ")
+            test = represent.r_binary(keywords, testBooks)
             x_test  = np.array(test)
+            print("Downscaling Dataset Dimensions and Preparing Plot ... ")
+
         else:
+            print("Calculating Binary Representation's Keywords ... ")
             keywords = const.binary_keywords
+            print("Calculating Binary Representation of Training Set ... ")
             x_train = const.binary_x_train
+            print("Calculating Binary Representation of Testing Set ... ")
             x_test = const.binary_x_test
+            print("Downscaling Dataset Dimensions and Preparing Plot ... ")
+            
+    if representation == "TF-IDF":
+        print("Calculating TF-IDF Representation of Training Set ... ")
+        x_train  = represent.r_tfidf(represent.getTrainSet(const.BookSet.HARRY_POTTER))
+        print("Calculating TF-IDF Representation of Testing Set ... ")
+        x_test   = represent.r_tfidf(testBooks)
+        print("Downscaling Dataset Dimensions and Preparing Plot ... ")
 
     # TSNE is responsibly to downscale the dataset from m dimension to n dimension
     tsne = TSNE(n_components=2, perplexity=25, learning_rate=10)
     # Learn a frontier for outlier detection with several classifiers
-    xx1, yy1 = np.meshgrid(np.linspace(-15, 15, 500), np.linspace(-15, 15, 500))
+    xx1, yy1 = np.meshgrid(np.linspace(-1000, 1000, 500), np.linspace(-1000, 1000, 500))
     for i, (clf_name, clf) in enumerate(classifiers.items()):
         figure = plt.figure(1)
         x_train = tsne.fit_transform(x_train) / 2
