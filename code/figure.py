@@ -41,7 +41,7 @@ def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, represent
     if kernel_type == "Linear":
         classifiers = {"One-Class SVM": OneClassSVM(nu=0.01, kernel="linear")}    # OPTIMIZED AS OF BINARY
     else:
-        classifiers = {"One-Class SVM": OneClassSVM(nu=0.1, kernel="rbf", gamma=0.00001)}     # NOT OPTIMIZED YET
+        classifiers = {"One-Class SVM": OneClassSVM(nu=0.1, kernel="rbf", gamma=0.1)}     # NOT OPTIMIZED YET
     colors = ['m', 'g', 'b']; legend1 = {}; legend2 = {}
 
     precalculated_flag = cache_state  # A flag allowing use of precalculated data - Make Controller of this flag
@@ -203,12 +203,14 @@ def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, represent
     if recall < 0.5:
         recall = sum(el in negative_tests for el in x_test[0:items_in_true_category]) / items_in_true_category
         precision =  sum(el in negative_tests for el in x_test[0:items_in_true_category]) / (items_in_true_category + len(x_train))
-        if outlier_state == 1:
+        if outlier_state == 1 and kernel_type == "Linear":
             plt.scatter(positive_tests[:,0], positive_tests[:,1], marker='x', color='black')    # Mark Outliers
     else:
-        if outlier_state == 1:
-                plt.scatter(negative_tests[:,0], negative_tests[:,1], marker='x', color='black')    # Mark Outliers
-
+        if outlier_state == 1 and kernel_type == "Linear":
+            plt.scatter(negative_tests[:,0], negative_tests[:,1], marker='x', color='black')    # Mark Outliers
+    if kernel_type == "Radial":
+        plt.scatter(negative_tests[:,0], negative_tests[:,1], marker='x', color='black')    # Mark Outliers
+        
     if recall + precision == 0:
         f1 = 0
     else:
