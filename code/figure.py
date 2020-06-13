@@ -41,7 +41,7 @@ def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, represent
     if kernel_type == "Linear":
         classifiers = {"One-Class SVM": OneClassSVM(nu=0.01, kernel="linear")}    # OPTIMIZED AS OF BINARY
     else:
-        classifiers = {"One-Class SVM": OneClassSVM(nu=0.1, kernel="rbf", gamma=0.1)}     # NOT OPTIMIZED YET
+        classifiers = {"One-Class SVM": OneClassSVM(nu=0.1, kernel="rbf", gamma=0.1, tol=0.001)}     # NOT OPTIMIZED YET
     colors = ['m', 'g', 'b']; legend1 = {}; legend2 = {}
 
     precalculated_flag = cache_state  # A flag allowing use of precalculated data - Make Controller of this flag
@@ -167,7 +167,7 @@ def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, represent
         x_pred = np.array([xx1.ravel(), yy1.ravel()]).T #+ [np.repeat(0, xx1.ravel().size) for _ in range(3 - 2)]).T
         Z1 = clf.decision_function(x_pred)
         Z1 = Z1.reshape(xx1.shape)
-        legend1[clf_name] = plt.contour(xx1, yy1, Z1, levels=0, linewidths=2, colors=colors[i])
+        legend1[clf_name] = plt.contour(xx1, yy1, Z1, levels=[0, Z1.max()], linewidths=2, colors=colors[i])
 
     common_train_value = Counter(y_train).most_common(1)[0][0]  # MOST COMMON VALUE IN TRAIN LABELS
 
@@ -198,19 +198,23 @@ def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, represent
     arrow_args = dict(arrowstyle="->")
 
     # Measurements
-    recall = sum(el in positive_tests for el in x_test[0:items_in_true_category]) / items_in_true_category
-    precision =  sum(el in positive_tests for el in x_test[0:items_in_true_category]) / (items_in_true_category + len(x_train))
-    if recall < 0.5:
-        recall = sum(el in negative_tests for el in x_test[0:items_in_true_category]) / items_in_true_category
-        precision =  sum(el in negative_tests for el in x_test[0:items_in_true_category]) / (items_in_true_category + len(x_train))
-        if outlier_state == 1 and kernel_type == "Linear":
-            plt.scatter(positive_tests[:,0], positive_tests[:,1], marker='x', color='black')    # Mark Outliers
+    if kernel_type == "Linear":
+        recall = sum(el in positive_tests for el in x_test[0:items_in_true_category]) / items_in_true_category
+        precision =  sum(el in positive_tests for el in x_test[0:items_in_true_category]) / (items_in_true_category + len(x_train))
+        if recall < 0.5:
+            recall = sum(el in negative_tests for el in x_test[0:items_in_true_category]) / items_in_true_category
+            precision =  sum(el in negative_tests for el in x_test[0:items_in_true_category]) / (items_in_true_category + len(x_train))
+            if outlier_state == 1:
+                plt.scatter(positive_tests[:,0], positive_tests[:,1], marker='x', color='black')    # Mark Outliers
+        else:
+            if outlier_state == 1:
+                plt.scatter(negative_tests[:,0], negative_tests[:,1], marker='x', color='black')    # Mark Outliers
     else:
-        if outlier_state == 1 and kernel_type == "Linear":
+        recall = sum(el in positive_tests for el in x_test[0:items_in_true_category]) / items_in_true_category
+        precision =  sum(el in positive_tests for el in x_test[0:items_in_true_category]) / (items_in_true_category + len(x_train))
+        if outlier_state == 1:
             plt.scatter(negative_tests[:,0], negative_tests[:,1], marker='x', color='black')    # Mark Outliers
-    if kernel_type == "Radial":
-        plt.scatter(negative_tests[:,0], negative_tests[:,1], marker='x', color='black')    # Mark Outliers
-        
+
     if recall + precision == 0:
         f1 = 0
     else:
