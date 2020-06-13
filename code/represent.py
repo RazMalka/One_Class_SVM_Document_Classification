@@ -92,8 +92,6 @@ def getBookSetKeywords(books: list):
     print("GET_SET Process finished --- %.6s seconds ---" % (time.time() - start_time))
     return frequent
 
-# For TF-IDF Representation
-
 # GENERAL
 def getTrainSet(bookSet: int):
     if (bookSet == const.BookSet.HARRY_POTTER):
@@ -128,7 +126,6 @@ def r_frequency(filename: str):
     file = opendoc(filename)
     print("B")
 
-#
 def r_tfidf(books: list):
     vectorizer = TfidfVectorizer()
 

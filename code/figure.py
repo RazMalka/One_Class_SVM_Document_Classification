@@ -51,29 +51,46 @@ def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, represent
         if precalculated_flag == 0:
             print("Calculating Binary Representation's Keywords ... ")
             keywords = represent.getTrainSetKeywords(const.BookSet.HARRY_POTTER)
+            with open('cache/binary_keywords.npy', 'wb') as f:
+                np.save(f, keywords)
             print("Calculating Binary Representation of Training Set ... ")
             train = represent.r_binary(keywords, represent.getTrainSet(const.BookSet.HARRY_POTTER))
             x_train = np.array(train)
+            with open('cache/binary_x_train.npy', 'wb') as f:
+                np.save(f, x_train)
             print("Calculating Binary Representation of Testing Set ... ")
             test = represent.r_binary(keywords, testBooks)
             x_test  = np.array(test)
+            with open('cache/binary_x_test.npy', 'wb') as f:
+                np.save(f, x_test)
             print("Downscaling Dataset Dimensions and Preparing Plot ... ")
-
         else:
             print("Calculating Binary Representation's Keywords ... ")
-            keywords = const.binary_keywords
+            keywords = np.load('cache/binary_keywords.npy')
             print("Calculating Binary Representation of Training Set ... ")
-            x_train = const.binary_x_train
+            x_train = np.load('cache/binary_x_train.npy')
             print("Calculating Binary Representation of Testing Set ... ")
-            x_test = const.binary_x_test
+            x_test = np.load('cache/binary_x_test.npy')
             print("Downscaling Dataset Dimensions and Preparing Plot ... ")
-            
+
     if representation == "TF-IDF":
-        print("Calculating TF-IDF Representation of Training Set ... ")
-        x_train  = represent.r_tfidf(represent.getTrainSet(const.BookSet.HARRY_POTTER))
-        print("Calculating TF-IDF Representation of Testing Set ... ")
-        x_test   = represent.r_tfidf(testBooks)
-        print("Downscaling Dataset Dimensions and Preparing Plot ... ")
+        if precalculated_flag == 0:
+            print("Calculating TF-IDF Representation of Training Set ... ")
+            x_train  = represent.r_tfidf(represent.getTrainSet(const.BookSet.HARRY_POTTER))
+            with open('cache/tfidf_x_train.npy', 'wb') as f:
+                np.save(f, x_train)
+            print("Calculating TF-IDF Representation of Testing Set ... ")
+            x_test   = represent.r_tfidf(testBooks)
+            with open('cache/tfidf_x_test.npy', 'wb') as f:
+                np.save(f, x_test)
+            print("Downscaling Dataset Dimensions and Preparing Plot ... ")
+        else:
+            print("Calculating TF-IDF Representation of Training Set ... ")
+            x_train = np.load('cache/tfidf_x_train.npy')
+            print("Calculating TF-IDF Representation of Testing Set ... ")
+            x_test  = np.load('cache/tfidf_x_test.npy')
+            print("Downscaling Dataset Dimensions and Preparing Plot ... ")
+
 
     # TSNE is responsibly to downscale the dataset from m dimension to n dimension
     tsne = TSNE(n_components=2, perplexity=25, learning_rate=10)
