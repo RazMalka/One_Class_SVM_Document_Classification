@@ -27,7 +27,7 @@ def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, represent
     global figure, canvas, toolbar
 
     # Validity Test
-    if representation not in ["Binary", "TF-IDF"] or kernel_type not in ["Linear", "Radial"]:
+    if representation not in ["Binary", "TF-IDF", "Frequency", "Hadamard"] or kernel_type not in ["Linear", "Radial"]:
         print("Unimplemented!")
         return False
 
@@ -41,20 +41,21 @@ def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, represent
     if kernel_type == "Linear":
         classifiers = {"One-Class SVM": OneClassSVM(nu=0.1, kernel="linear", gamma=0.1)}    # OPTIMIZED AS OF BINARY
     else:
-        classifiers = {"One-Class SVM": OneClassSVM(nu=0.05, kernel="rbf", gamma=0.01)}     # NOT OPTIMIZED YET
+        classifiers = {"One-Class SVM": OneClassSVM(nu=0.1, kernel="rbf", gamma='auto')}     # NOT OPTIMIZED YET
     colors = ['m', 'g', 'b']; legend1 = {}; legend2 = {}
 
     precalculated_flag = cache_state  # A flag allowing use of precalculated data - Make Controller of this flag
 
-    testBooks = const.books[180:240] # 34 HP books (GREEN), 26 GOT books (RED)
+    trainBooks = const.BookSet.HARRY_POTTER
+    testBooks = [y for x in [const.books[140:174], const.books[224:250]] for y in x] # 34 HP books (GREEN), 26 GOT books (RED)
     if representation == "Binary":
         if precalculated_flag == 0:
             print("Calculating Binary Representation's Keywords ... ")
-            keywords = represent.getTrainSetKeywords(const.BookSet.HARRY_POTTER)
+            keywords = represent.getTrainSetKeywords(trainBooks)
             with open('cache/binary_keywords.npy', 'wb') as f:
                 np.save(f, keywords)
             print("Calculating Binary Representation of Training Set ... ")
-            train = represent.r_binary(keywords, represent.getTrainSet(const.BookSet.HARRY_POTTER))
+            train = represent.r_binary(keywords, represent.getTrainSet(trainBooks))
             x_train = np.array(train)
             with open('cache/binary_x_train.npy', 'wb') as f:
                 np.save(f, x_train)
@@ -73,10 +74,36 @@ def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, represent
             x_test = np.load('cache/binary_x_test.npy')
             print("Downscaling Dataset Dimensions and Preparing Plot ... ")
 
+    if representation == "Frequency":
+        if precalculated_flag == 0:
+            print("Calculating Frequency Representation's Keywords ... ")
+            keywords = represent.getTrainSetKeywords(trainBooks)
+            with open('cache/frequency_keywords.npy', 'wb') as f:
+                np.save(f, keywords)
+            print("Calculating Frequency Representation of Training Set ... ")
+            train = represent.r_frequency(keywords, represent.getTrainSet(trainBooks))
+            x_train = np.array(train)
+            with open('cache/frequency_x_train.npy', 'wb') as f:
+                np.save(f, x_train)
+            print("Calculating Frequency Representation of Testing Set ... ")
+            test = represent.r_frequency(keywords, testBooks)
+            x_test  = np.array(test)
+            with open('cache/frequency_x_test.npy', 'wb') as f:
+                np.save(f, x_test)
+            print("Downscaling Dataset Dimensions and Preparing Plot ... ")
+        else:
+            print("Calculating Frequency Representation's Keywords ... ")
+            keywords = np.load('cache/frequency_keywords.npy')
+            print("Calculating Frequency Representation of Training Set ... ")
+            x_train = np.load('cache/frequency_x_train.npy')
+            print("Calculating Frequency Representation of Testing Set ... ")
+            x_test = np.load('cache/frequency_x_test.npy')
+            print("Downscaling Dataset Dimensions and Preparing Plot ... ")
+
     if representation == "TF-IDF":
         if precalculated_flag == 0:
             print("Calculating TF-IDF Representation of Training Set ... ")
-            x_train  = represent.r_tfidf(represent.getTrainSet(const.BookSet.HARRY_POTTER))
+            x_train  = represent.r_tfidf(represent.getTrainSet(trainBooks))
             with open('cache/tfidf_x_train.npy', 'wb') as f:
                 np.save(f, x_train)
             print("Calculating TF-IDF Representation of Testing Set ... ")
@@ -91,25 +118,55 @@ def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, represent
             x_test  = np.load('cache/tfidf_x_test.npy')
             print("Downscaling Dataset Dimensions and Preparing Plot ... ")
 
+    if representation == "Hadamard":
+        if precalculated_flag == 0:
+            print("Calculating Hadamard Representation's Keywords ... ")
+            keywords = represent.getTrainSetKeywords(trainBooks)
+            with open('cache/hadamard_keywords.npy', 'wb') as f:
+                np.save(f, keywords)
+            print("Calculating Hadamard Representation of Training Set ... ")
+            train = represent.r_hadamard(keywords, represent.getTrainSet(trainBooks), represent.getTrainSet(trainBooks))
+            x_train = np.array(train)
+            with open('cache/hadamard_x_train.npy', 'wb') as f:
+                np.save(f, x_train)
+            print("Calculating Hadamard Representation of Testing Set ... ")
+            test = represent.r_hadamard(keywords, represent.getTrainSet(trainBooks), testBooks)
+            x_test  = np.array(test)
+            with open('cache/hadamard_x_test.npy', 'wb') as f:
+                np.save(f, x_test)
+            print("Downscaling Dataset Dimensions and Preparing Plot ... ")
+        else:
+            print("Calculating Hadamard Representation's Keywords ... ")
+            keywords = np.load('cache/hadamard_keywords.npy')
+            print("Calculating Hadamard Representation of Training Set ... ")
+            x_train = np.load('cache/hadamard_x_train.npy')
+            print("Calculating Hadamard Representation of Testing Set ... ")
+            x_test = np.load('cache/hadamard_x_test.npy')
+            print("Downscaling Dataset Dimensions and Preparing Plot ... ")
 
+    raw_train   = x_train
+    raw_test    = x_test
     # TSNE is responsibly to downscale the dataset from m dimension to n dimension
-    tsne = TSNE(n_components=2, perplexity=25, learning_rate=10)
+    if kernel_type == "Linear":
+        tsne_train = TSNE(n_components=2, perplexity=20, learning_rate=20)
+        tsne_test = TSNE(n_components=2, perplexity=20, learning_rate=20)
+    else:
+        tsne_train = TSNE(n_components=2, perplexity=20, learning_rate=25, early_exaggeration=25)
+        tsne_test = TSNE(n_components=2, perplexity=20, learning_rate=20, early_exaggeration=50)
     # Learn a frontier for outlier detection with several classifiers
     xx1, yy1 = np.meshgrid(np.linspace(-1000, 1000, 500), np.linspace(-1000, 1000, 500))
     for i, (clf_name, clf) in enumerate(classifiers.items()):
         figure = plt.figure(1)
-        x_train = tsne.fit_transform(x_train) / 2
-        x_test  = tsne.fit_transform(x_test) / 2
+        x_train = tsne_train.fit_transform(x_train)
+        x_test  = tsne_test.fit_transform(x_test)
         y_train = clf.fit_predict(x_train)
         y_test = clf.predict(x_test)
         x_pred = np.array([xx1.ravel(), yy1.ravel()]).T #+ [np.repeat(0, xx1.ravel().size) for _ in range(3 - 2)]).T
         Z1 = clf.decision_function(x_pred)
         Z1 = Z1.reshape(xx1.shape)
-        legend1[clf_name] = plt.contour(xx1, yy1, Z1, levels=[0], linewidths=2, colors=colors[i])
+        legend1[clf_name] = plt.contour(xx1, yy1, Z1, levels=2, linewidths=2, colors=colors[i])
 
-    #print("PREDICT TRAIN ", y_train)
-    #print("PREDICT TEST ", y_test)
-
+    #x_train = x_train + TSNE(n_components=2, perplexity=25, learning_rate=10).fit_transform(raw_train) / 2
     common_train_value = Counter(y_train).most_common(1)[0][0]  # MOST COMMON VALUE IN TRAIN LABELS
 
     #print("TRAIN:   ", Counter(y_train).most_common(1)[0], " out of ", len(x_train))
@@ -133,15 +190,15 @@ def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, represent
     # Plot the results (= shape of the data points cloud)
     plt.figure(1)  # two clusters
     plt.title("Document Classification using One-Class SVM on Real Books Data Set")
-    plt.scatter(x_train[:, 0], x_train[:, 1], color='black')
+    
     plt.scatter(x_test[0:34, 0], x_test[0:34, 1], color='green')                        # DATA CORRESPONDING TO DEFAULT TRAINING SET - HARRY POTTER
     plt.scatter(x_test[34:len(x_test), 0], x_test[34:len(x_test), 1], color='red')      # DATA THAT SHOULD BE DETECTED AS AN OUTLIER - GAME OF THRONES
-    
+    plt.scatter(x_train[:, 0], x_train[:, 1], color='black')
     bbox_args = dict(boxstyle="round", fc="0.8")
     arrow_args = dict(arrowstyle="->")
     
     #plt.annotate("outlying points", xy=(6, 2), xycoords="data", textcoords="data", xytext=(0, 0.4), bbox=bbox_args, arrowprops=arrow_args)
-    plt.xlim((-10, 10)); plt.ylim((-10, 10))
+    plt.xlim((-25, 25)); plt.ylim((-25, 25))
     plt.legend(([legend1_values_list[0].collections[0]]), ([legend1_keys_list[0]]), loc="upper left", prop=matplotlib.font_manager.FontProperties(size=11))
     plt.ylabel(""); plt.xlabel("GREEN - HARRY POTTER vs RED - GAME OF THRONES")
 

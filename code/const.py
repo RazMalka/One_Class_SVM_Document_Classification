@@ -5,7 +5,7 @@
 # This file is meant to represent simple constants for the whole system
 from enum import Enum
 
-version = "v0.20"
+version = "v0.23"
 
 # MAIN
 root_title = "One-Class SVMs for Document Classification - G2"

@@ -15,6 +15,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 import pandas as pd
 import numpy as np
 import time
+from sklearn.preprocessing import normalize
 start_time = time.time()
 
 def opendoc(filename: str):
@@ -52,14 +53,14 @@ def remove_prefixes_suffixes(text: str): #slow
         filtered_text.append(w)
     return str(filtered_text)
 
-def frequencies(text: list, m: int):   
+def frequencies(text: list, m: int, return_index: int):   
     # Pass the split_it list to instance of Counter class. 
     counter = Counter(text)
-    
+    # return index 0 => words, 1 => frequencies
     # most_common() produces k frequently encountered 
     # input values and their respective counts. 
     most_occur = counter.most_common(m)
-    return [item[0] for item in most_occur]
+    return [item[return_index] for item in most_occur]
 
 # --------------------------------------------------------------------------------------
 # Take Care of Books and Text
@@ -82,20 +83,18 @@ def getBooks(books: list):
 # For Binary Representation
 def getBookKeywords(book: str):
     text = getBook(book)
-    frequent = frequencies(text, const.m)
-    print("GET_SET Process finished --- %.6s seconds ---" % (time.time() - start_time))
+    frequent = frequencies(text, const.m, 0)
     return frequent
 
 def getBookSetKeywords(books: list):
     text = getBooks(books)
-    frequent = frequencies(text, const.m)
-    print("GET_SET Process finished --- %.6s seconds ---" % (time.time() - start_time))
+    frequent = frequencies(text, const.m, 0)
     return frequent
 
 # GENERAL
 def getTrainSet(bookSet: int):
     if (bookSet == const.BookSet.HARRY_POTTER):
-        return const.books[0:53] # 214
+        return const.books[113:166] # 214
     if (bookSet == const.BookSet.GAME_OF_THRONES):
         return const.books[214:242] # 111
     return []
@@ -106,6 +105,9 @@ def getTrainSetKeywords(bookSet: int):
 
 # --------------------------------------------------------------------------------------
 # Representations
+
+# Binary representation of a specific document - choose the m dimensional binary vector 
+# where the ith entry is 1 if the ith keyword appears in the document and 0 if it does not.
 def r_binary(keywords: list, books: list):
     test_keywords = []
     for i in range(len(books)):
@@ -121,11 +123,28 @@ def r_binary(keywords: list, books: list):
         i += 1
     return test_keywords
 
-#
-def r_frequency(filename: str):
-    file = opendoc(filename)
-    print("B")
+# frequency representation - choose the m dimensional real valued vector, 
+# where the ith entry is the normalized frequency of appearance of the ith keyword in the specific document.
+def r_frequency(keywords: list, books: list):
+    test_keywords = []
+    for i in range(len(books)):
+        test_keywords.append([0] * const.m)
 
+    i = 0
+    test_books = books
+    while i < len(books):
+        book = getBook(test_books[i])
+        for j in range(const.m):
+            if (keywords[j] in book):
+                test_keywords[i][j] = book.count(keywords[j])
+        i += 1
+    
+    return normalize(test_keywords)
+
+# tf-idf representation (“term frequency inverse document frequency”).
+# It is used as a weighting factor in searches of information retrieval and text mining.
+# The tf–idf value increases proportionally to the number of times a word appears in the document,
+# and is offset by the number of documents in the corpus that contain the word.
 def r_tfidf(books: list):
     vectorizer = TfidfVectorizer()
 
@@ -137,10 +156,11 @@ def r_tfidf(books: list):
     df = pd.DataFrame(denselist, columns=feature_names)
     return df.values    # actual conversion to numpy ndarray
 
-#
-def r_hadamard(filename: str):
-    file = opendoc(filename)
-    print("D")
+# Hadamard product representation - consists of the m dimensional vector, 
+# where the ith entry is the product of the frequency of the ith keyword in the document, 
+# and its frequency over all documents (in the training set).
+def r_hadamard(keywords: list, train_books: list, test_books: list):
+    return frequencies(getBooks(train_books), const.m, 1) * r_frequency(keywords, test_books)
 
 def main():
     print(r_tfidf(getTrainSet(const.BookSet.HARRY_POTTER)))
