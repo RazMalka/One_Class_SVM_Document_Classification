@@ -46,8 +46,9 @@ def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, represent
 
     precalculated_flag = cache_state  # A flag allowing use of precalculated data - Make Controller of this flag
 
+    items_in_true_category = 34
     trainBooks = const.BookSet.HARRY_POTTER
-    testBooks = [y for x in [const.books[140:174], const.books[224:250]] for y in x] # 34 HP books (GREEN), 26 GOT books (RED)
+    testBooks = [y for x in [const.books[140:140 + items_in_true_category], const.books[224:250]] for y in x] # 34 HP books (GREEN), 26 GOT books (RED)
 
     print("--------------------------------------------------")
     if representation == "Binary":
@@ -150,11 +151,11 @@ def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, represent
     raw_test    = x_test
     # TSNE is responsibly to downscale the dataset from m dimension to n dimension
     if kernel_type == "Linear":
-        tsne_train = TSNE(n_components=2, perplexity=20, learning_rate=15)
-        tsne_test = TSNE(n_components=2, perplexity=20, learning_rate=15)
+        tsne_train = TSNE(n_components=2, perplexity=25, learning_rate=10)
+        tsne_test = TSNE(n_components=2, perplexity=25, learning_rate=10)
     else:
-        tsne_train = TSNE(n_components=2, perplexity=20, learning_rate=35)
-        tsne_test = TSNE(n_components=2, perplexity=20, learning_rate=35)
+        tsne_train = TSNE(n_components=2, perplexity=25, learning_rate=35)
+        tsne_test = TSNE(n_components=2, perplexity=25, learning_rate=35)
     # Learn a frontier for outlier detection with several classifiers
     xx1, yy1 = np.meshgrid(np.linspace(-100, 100, 500), np.linspace(-100, 100, 500))
     for i, (clf_name, clf) in enumerate(classifiers.items()):
@@ -168,19 +169,10 @@ def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, represent
         Z1 = Z1.reshape(xx1.shape)
         legend1[clf_name] = plt.contour(xx1, yy1, Z1, levels=0, linewidths=2, colors=colors[i])
 
-    #x_train = x_train + TSNE(n_components=2, perplexity=25, learning_rate=10).fit_transform(raw_train) / 2
     common_train_value = Counter(y_train).most_common(1)[0][0]  # MOST COMMON VALUE IN TRAIN LABELS
-
-    #print("TRAIN:   ", Counter(y_train).most_common(1)[0], " out of ", len(x_train))
-    #print("TEST:    ", Counter(y_test).most_common(1)[0], " out of 34 / ", len(x_test))
 
     positive_tests = np.array([])   # INIT NUMPY NDARRAY
     negative_tests = np.array([])   # INIT NUMPY NDARRAY
-    
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    # SHOULD ADD RECALL AND PRECISION IN LABEL TO BE PRINTED ON SCREEN
-    # ALSO CHECK WHAT THE F1 thing is about
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     for i, w in enumerate(x_test):
         if y_test[i] == common_train_value:
@@ -199,19 +191,34 @@ def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, represent
     plt.title("Document Classification using One-Class SVM on Real Books Data Set")
     
     plt.scatter(x_train[:, 0], x_train[:, 1], color='white', edgecolors="black", s=50)
-    plt.scatter(x_test[0:34, 0], x_test[0:34, 1], color='yellow', edgecolors="black", s=50)                        # DATA CORRESPONDING TO DEFAULT TRAINING SET - HARRY POTTER
-    plt.scatter(x_test[34:len(x_test), 0], x_test[34:len(x_test), 1], color='red', edgecolors="black", s=50)      # DATA THAT SHOULD BE DETECTED AS AN OUTLIER - GAME OF THRONES
+    plt.scatter(x_test[0:items_in_true_category, 0], x_test[0:items_in_true_category, 1], color='yellow', edgecolors="black", s=50)                        # DATA CORRESPONDING TO DEFAULT TRAINING SET - HARRY POTTER
+    plt.scatter(x_test[items_in_true_category:len(x_test), 0], x_test[items_in_true_category:len(x_test), 1], color='red', edgecolors="black", s=50)      # DATA THAT SHOULD BE DETECTED AS AN OUTLIER - GAME OF THRONES
 
-    if outlier_state == 1:
-        plt.scatter(negative_tests[:,0], negative_tests[:,1], marker='x', color='black')    # Mark Outliers
     bbox_args = dict(boxstyle="round", fc="0.8")
     arrow_args = dict(arrowstyle="->")
-    
-    #plt.annotate("outlying points", xy=(6, 2), xycoords="data", textcoords="data", xytext=(0, 0.4), bbox=bbox_args, arrowprops=arrow_args)
+
+    # Measurements
+    recall = sum(el in positive_tests for el in x_test[0:items_in_true_category]) / items_in_true_category
+    precision =  sum(el in positive_tests for el in x_test[0:items_in_true_category]) / (items_in_true_category + len(x_train))
+    if recall < 0.5:
+        recall = sum(el in negative_tests for el in x_test[0:items_in_true_category]) / items_in_true_category
+        precision =  sum(el in negative_tests for el in x_test[0:items_in_true_category]) / (items_in_true_category + len(x_train))
+        if outlier_state == 1:
+            plt.scatter(positive_tests[:,0], positive_tests[:,1], marker='x', color='black')    # Mark Outliers
+    else:
+        if outlier_state == 1:
+                plt.scatter(negative_tests[:,0], negative_tests[:,1], marker='x', color='black')    # Mark Outliers
+
+    if recall + precision == 0:
+        f1 = 0
+    else:
+        f1 = (2*recall*precision)/(recall+precision)
+
     plt.xlim((-25, 25)); plt.ylim((-25, 25))
     plt.legend(([legend1_values_list[0].collections[0]]), ([legend1_keys_list[0]]), loc="upper left", prop=matplotlib.font_manager.FontProperties(size=11))
-    plt.ylabel("Training Set - WHITE : HARRY POTTER"); plt.xlabel("Testing Set - YELLOW : HARRY POTTER          RED : GAME OF THRONES")
 
+    plt.xlabel("Recall: {}%,    Precision: {}%,    F1: {}%".format('{0:.2f}'.format(recall*100), '{0:.2f}'.format(precision*100), '{0:.2f}'.format(f1*100)))
+    
     # Draw and Pack graphical components and controllers
     canvas = FigureCanvasTkAgg(figure, rightFrame); canvas.draw()
 
