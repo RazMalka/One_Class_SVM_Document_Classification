@@ -60,11 +60,11 @@ def aboutWindow(root: tk.Toplevel):
 # -------------------------------------------------------------------
 # Content
 
-leftFrame = rightFrame = item_xpos = item_ypos = combobox_rep = combobox_kernel = cache_state = None
+leftFrame = rightFrame = item_xpos = item_ypos = combobox_rep = combobox_kernel = cache_state = outlier_state = None
 
 def run_onclick():
-    global combobox_rep, cache_state
-    figure.createFigure(rightFrame, item_xpos, item_ypos, combobox_rep.get(), combobox_kernel.get(), cache_state.get()) # CHANGE THIS TO GET PARAMETERS
+    global combobox_rep, cache_state, outlier_state
+    figure.createFigure(rightFrame, item_xpos, item_ypos, combobox_rep.get(), combobox_kernel.get(), cache_state.get(), outlier_state.get()) # CHANGE THIS TO GET PARAMETERS
 
 def initRootFrames(root: tk.Toplevel, width: int, height: int):
     global leftFrame, rightFrame, item_xpos, item_ypos
@@ -75,7 +75,7 @@ def initRootFrames(root: tk.Toplevel, width: int, height: int):
     rightFrame = tk.Frame(master=root, bg="white")
 
 def initControlPort(root: tk.Toplevel, width: int, height: int):
-    global combobox_rep, combobox_kernel, cache_state
+    global combobox_rep, combobox_kernel, cache_state, outlier_state
 
     label_controlport = tk.Label(text="Control Port", bg="white").place(x=6.75 * item_xpos, y=0, in_=leftFrame)
 
@@ -83,7 +83,9 @@ def initControlPort(root: tk.Toplevel, width: int, height: int):
     label_kernel = tk.Label(text="Kernel Type:", bg="white").place(x=item_xpos,y=height/6, in_=leftFrame)
 
     cache_state = tk.IntVar(value=1) # Checked by Default
-    cache_checkbutton = ttk.Checkbutton(variable=cache_state, onvalue=1, offvalue=0, text="Grab Data from Cache")
+    cache_checkbutton = tk.Checkbutton(variable=cache_state, onvalue=1, offvalue=0, text="Grab Data from Cache")
+    outlier_state = tk.IntVar(value=1) # Checked by Default
+    outlier_checkbutton = tk.Checkbutton(variable=outlier_state, onvalue=1, offvalue=0, text="Show Determined Outliers")
     combobox_rep = ttk.Combobox(width=int(2 * item_xpos), values=const.representations, state="readonly")
     combobox_kernel = ttk.Combobox(width=int(2 * item_xpos), values=const.kernel_types, state="readonly")
     button_run = ttk.Button(width=int(2 * item_xpos), text="Run", command=lambda: run_onclick())
@@ -91,14 +93,14 @@ def initControlPort(root: tk.Toplevel, width: int, height: int):
     combobox_rep.current(0)
     combobox_kernel.current(0)
 
-    style = ttk.Style()
-    style.configure("WHITE.TCheckbutton", background="white")
-
     combobox_rep.place(x=item_xpos, y=height/10, in_=leftFrame)
     combobox_kernel.place(x=item_xpos, y=height/4.8, in_=leftFrame)
     button_run.place(x=item_xpos, y=height/3.2, in_=leftFrame)
+
+    cache_checkbutton.configure(bg="white")
+    outlier_checkbutton.configure(bg="white")
+    outlier_checkbutton.place(x=item_xpos, y=height/2.3, in_=leftFrame)
     cache_checkbutton.place(x=item_xpos, y=height/2.6, in_=leftFrame)
-    cache_checkbutton.configure(style="WHITE.TCheckbutton")
 
 def initViewPort(root: tk.Toplevel, width: int, height: int):
     label_viewport = tk.Label(text="View Port", bg="white").place(x=36.3 * item_xpos, y=0, in_=rightFrame)

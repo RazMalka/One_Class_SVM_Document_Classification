@@ -23,7 +23,7 @@ from collections import Counter
 
 figure = canvas = toolbar = None
 
-def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, representation: str, kernel_type: str, cache_state: int):
+def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, representation: str, kernel_type: str, cache_state: int, outlier_state: int):
     global figure, canvas, toolbar
 
     # Validity Test
@@ -39,15 +39,17 @@ def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, represent
 
     # Define "classifiers" to be used
     if kernel_type == "Linear":
-        classifiers = {"One-Class SVM": OneClassSVM(nu=0.1, kernel="linear", gamma=0.1)}    # OPTIMIZED AS OF BINARY
+        classifiers = {"One-Class SVM": OneClassSVM(nu=0.01, kernel="linear")}    # OPTIMIZED AS OF BINARY
     else:
-        classifiers = {"One-Class SVM": OneClassSVM(nu=0.1, kernel="rbf", gamma='auto')}     # NOT OPTIMIZED YET
+        classifiers = {"One-Class SVM": OneClassSVM(nu=0.1, kernel="rbf", gamma=0.00001)}     # NOT OPTIMIZED YET
     colors = ['m', 'g', 'b']; legend1 = {}; legend2 = {}
 
     precalculated_flag = cache_state  # A flag allowing use of precalculated data - Make Controller of this flag
 
     trainBooks = const.BookSet.HARRY_POTTER
     testBooks = [y for x in [const.books[140:174], const.books[224:250]] for y in x] # 34 HP books (GREEN), 26 GOT books (RED)
+
+    print("--------------------------------------------------")
     if representation == "Binary":
         if precalculated_flag == 0:
             print("Calculating Binary Representation's Keywords ... ")
@@ -148,13 +150,13 @@ def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, represent
     raw_test    = x_test
     # TSNE is responsibly to downscale the dataset from m dimension to n dimension
     if kernel_type == "Linear":
-        tsne_train = TSNE(n_components=2, perplexity=20, learning_rate=20)
-        tsne_test = TSNE(n_components=2, perplexity=20, learning_rate=20)
+        tsne_train = TSNE(n_components=2, perplexity=20, learning_rate=15)
+        tsne_test = TSNE(n_components=2, perplexity=20, learning_rate=15)
     else:
-        tsne_train = TSNE(n_components=2, perplexity=20, learning_rate=25, early_exaggeration=25)
-        tsne_test = TSNE(n_components=2, perplexity=20, learning_rate=20, early_exaggeration=50)
+        tsne_train = TSNE(n_components=2, perplexity=20, learning_rate=35)
+        tsne_test = TSNE(n_components=2, perplexity=20, learning_rate=35)
     # Learn a frontier for outlier detection with several classifiers
-    xx1, yy1 = np.meshgrid(np.linspace(-1000, 1000, 500), np.linspace(-1000, 1000, 500))
+    xx1, yy1 = np.meshgrid(np.linspace(-100, 100, 500), np.linspace(-100, 100, 500))
     for i, (clf_name, clf) in enumerate(classifiers.items()):
         figure = plt.figure(1)
         x_train = tsne_train.fit_transform(x_train)
@@ -164,7 +166,7 @@ def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, represent
         x_pred = np.array([xx1.ravel(), yy1.ravel()]).T #+ [np.repeat(0, xx1.ravel().size) for _ in range(3 - 2)]).T
         Z1 = clf.decision_function(x_pred)
         Z1 = Z1.reshape(xx1.shape)
-        legend1[clf_name] = plt.contour(xx1, yy1, Z1, levels=2, linewidths=2, colors=colors[i])
+        legend1[clf_name] = plt.contour(xx1, yy1, Z1, levels=0, linewidths=2, colors=colors[i])
 
     #x_train = x_train + TSNE(n_components=2, perplexity=25, learning_rate=10).fit_transform(raw_train) / 2
     common_train_value = Counter(y_train).most_common(1)[0][0]  # MOST COMMON VALUE IN TRAIN LABELS
@@ -174,6 +176,11 @@ def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, represent
 
     positive_tests = np.array([])   # INIT NUMPY NDARRAY
     negative_tests = np.array([])   # INIT NUMPY NDARRAY
+    
+    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    # SHOULD ADD RECALL AND PRECISION IN LABEL TO BE PRINTED ON SCREEN
+    # ALSO CHECK WHAT THE F1 thing is about
+    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     for i, w in enumerate(x_test):
         if y_test[i] == common_train_value:
@@ -191,16 +198,19 @@ def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, represent
     plt.figure(1)  # two clusters
     plt.title("Document Classification using One-Class SVM on Real Books Data Set")
     
-    plt.scatter(x_test[0:34, 0], x_test[0:34, 1], color='green')                        # DATA CORRESPONDING TO DEFAULT TRAINING SET - HARRY POTTER
-    plt.scatter(x_test[34:len(x_test), 0], x_test[34:len(x_test), 1], color='red')      # DATA THAT SHOULD BE DETECTED AS AN OUTLIER - GAME OF THRONES
-    plt.scatter(x_train[:, 0], x_train[:, 1], color='black')
+    plt.scatter(x_train[:, 0], x_train[:, 1], color='white', edgecolors="black", s=50)
+    plt.scatter(x_test[0:34, 0], x_test[0:34, 1], color='yellow', edgecolors="black", s=50)                        # DATA CORRESPONDING TO DEFAULT TRAINING SET - HARRY POTTER
+    plt.scatter(x_test[34:len(x_test), 0], x_test[34:len(x_test), 1], color='red', edgecolors="black", s=50)      # DATA THAT SHOULD BE DETECTED AS AN OUTLIER - GAME OF THRONES
+
+    if outlier_state == 1:
+        plt.scatter(negative_tests[:,0], negative_tests[:,1], marker='x', color='black')    # Mark Outliers
     bbox_args = dict(boxstyle="round", fc="0.8")
     arrow_args = dict(arrowstyle="->")
     
     #plt.annotate("outlying points", xy=(6, 2), xycoords="data", textcoords="data", xytext=(0, 0.4), bbox=bbox_args, arrowprops=arrow_args)
     plt.xlim((-25, 25)); plt.ylim((-25, 25))
     plt.legend(([legend1_values_list[0].collections[0]]), ([legend1_keys_list[0]]), loc="upper left", prop=matplotlib.font_manager.FontProperties(size=11))
-    plt.ylabel(""); plt.xlabel("GREEN - HARRY POTTER vs RED - GAME OF THRONES")
+    plt.ylabel("Training Set - WHITE : HARRY POTTER"); plt.xlabel("Testing Set - YELLOW : HARRY POTTER          RED : GAME OF THRONES")
 
     # Draw and Pack graphical components and controllers
     canvas = FigureCanvasTkAgg(figure, rightFrame); canvas.draw()
@@ -218,7 +228,8 @@ def emptyFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int):
 
     figure = plt.figure(1)
     plt.title("Document Classification using One-Class SVM on Real Books Data Set")
-    plt.xlim((-10, 10)); plt.ylim((-10, 10))
+    plt.xlim((-25, 25)); plt.ylim((-25, 25))
+    plt.ylabel("Training Set - WHITE : HARRY POTTER"); plt.xlabel("Testing Set - YELLOW : HARRY POTTER          RED : GAME OF THRONES")
     bbox_args = dict(boxstyle="round", fc="0.8")
     arrow_args = dict(arrowstyle="->")
     canvas = FigureCanvasTkAgg(figure, rightFrame); canvas.draw()

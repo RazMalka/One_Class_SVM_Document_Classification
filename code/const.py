@@ -5,7 +5,7 @@
 # This file is meant to represent simple constants for the whole system
 from enum import Enum
 
-version = "v0.23"
+version = "v0.25"
 
 # MAIN
 root_title = "One-Class SVMs for Document Classification - G2"
@@ -25,7 +25,7 @@ kernel_types    = ["Linear", "Radial"]
 #training_sets = ["-", "Harry Potter", "Game of Thrones"]
 
 # REPRESENT
-m       = 10    # Amount of Keywords Taken
+m       = 15    # Amount of Keywords Taken
 special = [".", ",", "’", "“", "”", "—", "?", "!", "|", "-", ";", ":", '\'', "`",
             "said", "look", "get", "have", "had", "has", "page", "chapter", "got", "no",
             "yes", "know", "dont", "do", "did", "didnt", "thing", "us", "we", "them"]
