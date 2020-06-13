@@ -23,7 +23,7 @@ from collections import Counter
 
 figure = canvas = toolbar = None
 
-def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, representation: str, kernel_type: str):
+def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, representation: str, kernel_type: str, cache_state: int):
     global figure, canvas, toolbar
 
     # Validity Test
@@ -44,7 +44,7 @@ def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, represent
         classifiers = {"One-Class SVM": OneClassSVM(nu=0.05, kernel="rbf", gamma=0.01)}     # NOT OPTIMIZED YET
     colors = ['m', 'g', 'b']; legend1 = {}; legend2 = {}
 
-    precalculated_flag = 1  # A flag allowing use of precalculated data - Make Controller of this flag
+    precalculated_flag = cache_state  # A flag allowing use of precalculated data - Make Controller of this flag
 
     testBooks = const.books[180:240] # 34 HP books (GREEN), 26 GOT books (RED)
     if representation == "Binary":
