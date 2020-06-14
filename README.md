@@ -45,7 +45,7 @@ cd SVM-DC
 conda install -c anaconda nltk
 conda install -c anaconda sklearn
 ```
-- Execute from CLI
+- Execute from Anaconda CLI
 ```
 cd ..
 conda init
