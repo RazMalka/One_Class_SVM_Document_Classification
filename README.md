@@ -13,6 +13,15 @@ In addition, it also displays measures (F1-measure, recall, precision).
 Input data is whole books that are split into chunks of 1000 lines each,
 and cleaned of stopwords and special symbols automatically.
 
+The idea of One-Class SVM was first published by Bernhard Schölkopf (1999),
+who extended the SVM methodology to handle training using only positive information.
+
+One-Class Classification is a special case of supervised classification,
+where negative samples are absent during training, but may appear during testing.
+
+All the data having the same label in the target class is equivalent to having no label.
+Therefore, it can be considered unsupervised learning, and used as an outlier detection algorithm.
+
 DISCLAIMER:
 This project is non-profit and is intended to serve for educational purposes only.
 It is not meant to infringe copyright rights by any means.
@@ -20,6 +29,7 @@ In case that any of the documents used are copyrighted,
 please notify the repository owner and they will be removed.
 ```
 <!---- ![OCSVM](https://ars.els-cdn.com/content/image/1-s2.0-S0031320314002751-gr1.jpg) \ ---->
+<!---- The labels aren't providing any additional information. ---->
 \
 Research Papers: \
 [One-Class SVMs for Document Classification (Larry M. Manevitz, Malik Yousef)](http://www.jmlr.org/papers/volume2/manevitz01a/manevitz01a.pdf) \
