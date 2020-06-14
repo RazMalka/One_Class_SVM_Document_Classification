@@ -6,4 +6,7 @@ Research Papers: \
 [One-Class Document Classification via Neural Networks (Larry M. Manevitz, Malik Yousef)](http://cs.haifa.ac.il/~manevitz/Publication/One-class%20document%20classification%20via%20Neural%20Networks.pdf) \
 \
 Workspace&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- VSCode, Anaconda \
-Libraries Used - Tkinter (GUI), MatplotLib (Plotting), Sklearn (SVM, Classification), NLTK (NLP), Numpy, SciPy, Pandas
+Libraries Used - Tkinter (GUI), MatplotLib (Plotting), Sklearn (SVM, Classification), NLTK (NLP), Numpy, SciPy, Pandas\n
+\n
+![appendix1](https://github.com/RazMalka/SVM-DC/blob/master/papers/appendix1.png) \
+![appendix2](https://github.com/RazMalka/SVM-DC/blob/master/papers/appendix2.png) \
