@@ -64,7 +64,7 @@ leftFrame = rightFrame = item_xpos = item_ypos = combobox_rep = combobox_kernel 
 
 def run_onclick():
     global combobox_rep, cache_state, outlier_state
-    figure.createFigure(rightFrame, item_xpos, item_ypos, combobox_rep.get(), combobox_kernel.get(), cache_state.get(), outlier_state.get()) # CHANGE THIS TO GET PARAMETERS
+    figure.createFigure(rightFrame, item_xpos, item_ypos, combobox_rep.get(), combobox_kernel.get(), cache_state.get(), outlier_state.get())
 
 def initRootFrames(root: tk.Toplevel, width: int, height: int):
     global leftFrame, rightFrame, item_xpos, item_ypos
@@ -106,9 +106,6 @@ def initViewPort(root: tk.Toplevel, width: int, height: int):
     label_viewport = tk.Label(text="View Port", bg="white").place(x=36.3 * item_xpos, y=0, in_=rightFrame)
     figure.emptyFigure(rightFrame, item_xpos, item_ypos)
 
-def contentEventHandlers(root: tk.Toplevel, width: int, height: int):
-    print("Event Handlers") # Should Have Action on Button 'Run'
-
 def contentPacking(root: tk.Toplevel, width: int, height: int):
     leftFrame.place(x=0, y=0, in_=root)
     rightFrame.place(x=27 * item_xpos, y=0, in_=root)
@@ -118,8 +115,6 @@ def configureRootContent(root: tk.Toplevel, width: int, height: int):
     initRootFrames(root, width, height)
     initControlPort(root, width, height)
     initViewPort(root, width, height)
-
-    contentEventHandlers(root, width, height)
     contentPacking(root, width, height)
 
 # -------------------------------------------------------------------
