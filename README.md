@@ -2,8 +2,8 @@
 
 ### Brief
 ```
-Implementation of One-class SVM (Support Vector Machine),
-that uses binary, frequency, tf-idf and hadamard representations.
+Implementation of One-class SVM (Support Vector Machine) that uses
+binary, frequency, tf-idf and hadamard representations for document classification.
 Based strictly on a research paper by Larry M. Manevitz and Malik Yousef,
 'One-Class SVMs for Document Classification'.
 
