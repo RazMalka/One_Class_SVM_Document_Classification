@@ -31,18 +31,15 @@ please notify the repository owner and they will be removed.
 ```
 <!---- ![OCSVM](https://ars.els-cdn.com/content/image/1-s2.0-S0031320314002751-gr1.jpg) \ ---->
 <!---- The labels aren't providing any additional information. ---->
-\
 ### Research Papers
-- [One-Class SVMs for Document Classification (Larry M. Manevitz, Malik Yousef)](http://www.jmlr.org/papers/volume2/manevitz01a/manevitz01a.pdf) \
-- [One-Class Document Classification via Neural Networks (Larry M. Manevitz, Malik Yousef)](http://cs.haifa.ac.il/~manevitz/Publication/One-class%20document%20classification%20via%20Neural%20Networks.pdf) \
-\
+- [One-Class SVMs for Document Classification (Larry M. Manevitz, Malik Yousef)](http://www.jmlr.org/papers/volume2/manevitz01a/manevitz01a.pdf)
+- [One-Class Document Classification via Neural Networks (Larry M. Manevitz, Malik Yousef)](http://cs.haifa.ac.il/~manevitz/Publication/One-class%20document%20classification%20via%20Neural%20Networks.pdf)
 ### Prerequisites
 - Tkinter (GUI)
 - MatplotLib (Plotting)
 - Sklearn (SVM, Classification)
 - NLTK (NLP)
 - Numpy, SciPy, Pandas (Scientific Calculations)
-\
-\
-![appendix1](https://github.com/RazMalka/SVM-DC/blob/master/papers/appendix1.png) \
-![appendix2](https://github.com/RazMalka/SVM-DC/blob/master/papers/appendix2.png) \
+### Appendix Data
+![appendix1](https://github.com/RazMalka/SVM-DC/blob/master/papers/appendix1.png)
+![appendix2](https://github.com/RazMalka/SVM-DC/blob/master/papers/appendix2.png)
