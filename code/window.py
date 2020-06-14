@@ -64,7 +64,14 @@ leftFrame = rightFrame = item_xpos = item_ypos = combobox_rep = combobox_kernel 
 
 def run_onclick():
     global combobox_rep, cache_state, outlier_state
+    import time
+    start_time = time.time()
+
     figure.createFigure(rightFrame, item_xpos, item_ypos, combobox_rep.get(), combobox_kernel.get(), cache_state.get(), outlier_state.get())
+    print("--- %s seconds ---" % (time.time() - start_time))
+
+
+
 
 def initRootFrames(root: tk.Toplevel, width: int, height: int):
     global leftFrame, rightFrame, item_xpos, item_ypos

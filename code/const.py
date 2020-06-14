@@ -21,7 +21,7 @@ about_width = 400
 about_height = 180
 
 representations = ["Binary", "Frequency", "TF-IDF", "Hadamard"]
-kernel_types    = ["Radial", "Linear"]
+kernel_types    = ["Linear", "Radial"]
 #training_sets = ["-", "Harry Potter", "Game of Thrones"]
 
 # REPRESENT

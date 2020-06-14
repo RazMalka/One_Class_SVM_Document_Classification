@@ -41,9 +41,9 @@ def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, represent
 
     # Define "classifiers" to be used
     if kernel_type == "Linear":
-        classifiers = {"One-Class SVM": OneClassSVM(nu=0.05, kernel="linear")}    # OPTIMIZED AS OF BINARY
+        classifiers = {"One-Class SVM": OneClassSVM(nu=0.1, kernel="linear", tol=0.01)}
     else:
-        classifiers = {"One-Class SVM": OneClassSVM(nu=0.05, kernel="rbf", gamma=0.005, tol=0.01)}     # NOT OPTIMIZED YET
+        classifiers = {"One-Class SVM": OneClassSVM(nu=0.05, kernel="rbf", gamma=0.005, tol=0.01)}
     colors = ['m', 'g', 'b']; legend1 = {}; legend2 = {}
 
     precalculated_flag = cache_state  # A flag allowing use of precalculated data - Make Controller of this flag
@@ -205,20 +205,14 @@ def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, represent
     arrow_args = dict(arrowstyle="->")
 
     # Measurements and Outlier Detection
-    if kernel_type == "Linear":
-        recall = sum(el in positive_tests for el in x_test[0:items_in_true_category]) / items_in_true_category
-        precision =  sum(el in positive_tests for el in x_test[0:items_in_true_category]) / (items_in_true_category + items_in_train)
-        if recall < 0.5:
-            recall = sum(el in negative_tests for el in x_test[0:items_in_true_category]) / items_in_true_category
-            precision =  sum(el in negative_tests for el in x_test[0:items_in_true_category]) / (items_in_true_category + items_in_train)
-            if outlier_state == 1:
-                plt.scatter(positive_tests[:,0], positive_tests[:,1], marker='x', color='black')    # Mark Outliers
-        else:
-            if outlier_state == 1:
-                plt.scatter(negative_tests[:,0], negative_tests[:,1], marker='x', color='black')    # Mark Outliers
+    recall = sum(el in positive_tests for el in x_test[0:items_in_true_category]) / items_in_true_category
+    precision =  sum(el in positive_tests for el in x_test[0:items_in_true_category]) / (items_in_true_category + items_in_train)
+    if 2*recall < 1:
+        recall = sum(el in negative_tests for el in x_test[0:items_in_true_category]) / items_in_true_category
+        precision =  sum(el in negative_tests for el in x_test[0:items_in_true_category]) / (items_in_true_category + items_in_train)
+        if outlier_state == 1:
+            plt.scatter(positive_tests[:,0], positive_tests[:,1], marker='x', color='black')    # Mark Outliers
     else:
-        recall = sum(el in positive_tests for el in x_test[0:items_in_true_category]) / items_in_true_category
-        precision =  sum(el in positive_tests for el in x_test[0:items_in_true_category]) / (items_in_true_category + items_in_train)
         if outlier_state == 1:
             plt.scatter(negative_tests[:,0], negative_tests[:,1], marker='x', color='black')    # Mark Outliers
 
@@ -242,6 +236,8 @@ def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, represent
 
     canvas.get_tk_widget().pack(side="bottom", fill="both", expand=True, padx=item_xpos, pady=item_ypos)
     canvas._tkcanvas.pack(side="top", fill="both", expand=True, padx=item_xpos, pady=item_ypos)
+
+    return "{} {} {}".format('{0:.3f}'.format(f1),'{0:.3f}'.format(recall),'{0:.3f}'.format(precision))
 
 def emptyFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int):
     global figure, canvas, toolbar
