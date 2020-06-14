@@ -20,6 +20,8 @@ from sklearn.manifold import TSNE
 from sklearn.preprocessing import normalize
 
 from collections import Counter
+from sklearn.feature_extraction.text import TfidfVectorizer
+import pandas as pd
 
 figure = canvas = toolbar = None
 
@@ -39,16 +41,18 @@ def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, represent
 
     # Define "classifiers" to be used
     if kernel_type == "Linear":
-        classifiers = {"One-Class SVM": OneClassSVM(nu=0.01, kernel="linear")}    # OPTIMIZED AS OF BINARY
+        classifiers = {"One-Class SVM": OneClassSVM(nu=0.1, kernel="linear", tol=0.01)}
     else:
-        classifiers = {"One-Class SVM": OneClassSVM(nu=0.1, kernel="rbf", gamma=0.1, tol=0.001)}     # NOT OPTIMIZED YET
+        classifiers = {"One-Class SVM": OneClassSVM(nu=0.05, kernel="rbf", gamma=0.005, tol=0.01)}
     colors = ['m', 'g', 'b']; legend1 = {}; legend2 = {}
 
     precalculated_flag = cache_state  # A flag allowing use of precalculated data - Make Controller of this flag
 
-    items_in_true_category = 34
+    items_in_train         = 40
+    trainset_end           = 70
+    items_in_true_category = 120
     trainBooks = const.BookSet.HARRY_POTTER
-    testBooks = [y for x in [const.books[140:140 + items_in_true_category], const.books[224:250]] for y in x] # 34 HP books (GREEN), 26 GOT books (RED)
+    testBooks = [y for x in [const.books[trainset_end:trainset_end + items_in_true_category], const.books[224:250]] for y in x] # 34 HP books (GREEN), 26 GOT books (RED)
 
     print("--------------------------------------------------")
     if representation == "Binary":
@@ -105,12 +109,14 @@ def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, represent
 
     if representation == "TF-IDF":
         if precalculated_flag == 0:
+            vectorizer = TfidfVectorizer(max_features=1000)
+
             print("Calculating TF-IDF Representation of Training Set ... ")
-            x_train  = represent.r_tfidf(represent.getTrainSet(trainBooks))
+            x_train  = represent.r_tfidf(vectorizer, represent.getTrainSet(trainBooks), 0)
             with open('cache/tfidf_x_train.npy', 'wb') as f:
                 np.save(f, x_train)
             print("Calculating TF-IDF Representation of Testing Set ... ")
-            x_test   = represent.r_tfidf(testBooks)
+            x_test   = represent.r_tfidf(vectorizer, testBooks, 1)
             with open('cache/tfidf_x_test.npy', 'wb') as f:
                 np.save(f, x_test)
             print("Downscaling Dataset Dimensions and Preparing Plot ... ")
@@ -149,19 +155,20 @@ def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, represent
 
     raw_train   = x_train
     raw_test    = x_test
+    
+    size_train = x_train.shape[0]
+
+    print("Dimensions: [ Training Set ,", x_train.shape, "][ Testing Set ,", x_test.shape, "]")
+    X = np.vstack((x_train,x_test))
     # TSNE is responsibly to downscale the dataset from m dimension to n dimension
-    if kernel_type == "Linear":
-        tsne_train = TSNE(n_components=2, perplexity=25, learning_rate=10)
-        tsne_test = TSNE(n_components=2, perplexity=25, learning_rate=10)
-    else:
-        tsne_train = TSNE(n_components=2, perplexity=25, learning_rate=35)
-        tsne_test = TSNE(n_components=2, perplexity=25, learning_rate=35)
+    tsne = TSNE(n_components=2, perplexity=30, learning_rate=10)
+    tsne = tsne.fit_transform(X)
     # Learn a frontier for outlier detection with several classifiers
     xx1, yy1 = np.meshgrid(np.linspace(-100, 100, 500), np.linspace(-100, 100, 500))
     for i, (clf_name, clf) in enumerate(classifiers.items()):
         figure = plt.figure(1)
-        x_train = tsne_train.fit_transform(x_train)
-        x_test  = tsne_test.fit_transform(x_test)
+        x_train = tsne[0:x_train.shape[0],:]
+        x_test  = tsne[x_train.shape[0]:,:]
         y_train = clf.fit_predict(x_train)
         y_test = clf.predict(x_test)
         x_pred = np.array([xx1.ravel(), yy1.ravel()]).T #+ [np.repeat(0, xx1.ravel().size) for _ in range(3 - 2)]).T
@@ -190,28 +197,22 @@ def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, represent
     plt.figure(1)  # two clusters
     plt.title("Document Classification using One-Class SVM on Real Books Data Set")
     
-    plt.scatter(x_train[:, 0], x_train[:, 1], color='white', edgecolors="black", s=50)
-    plt.scatter(x_test[0:items_in_true_category, 0], x_test[0:items_in_true_category, 1], color='yellow', edgecolors="black", s=50)                        # DATA CORRESPONDING TO DEFAULT TRAINING SET - HARRY POTTER
-    plt.scatter(x_test[items_in_true_category:len(x_test), 0], x_test[items_in_true_category:len(x_test), 1], color='red', edgecolors="black", s=50)      # DATA THAT SHOULD BE DETECTED AS AN OUTLIER - GAME OF THRONES
+    plt.scatter(x_train[:, 0], x_train[:, 1], color='white', edgecolors="black", s=50, label="Training Set")
+    plt.scatter(x_test[0:items_in_true_category, 0], x_test[0:items_in_true_category, 1], color='yellow', edgecolors="black", s=50, label="True Category")                        # DATA CORRESPONDING TO DEFAULT TRAINING SET - HARRY POTTER
+    plt.scatter(x_test[items_in_true_category:len(x_test), 0], x_test[items_in_true_category:len(x_test), 1], color='red', edgecolors="black", s=50, label="False Category")      # DATA THAT SHOULD BE DETECTED AS AN OUTLIER - GAME OF THRONES
 
     bbox_args = dict(boxstyle="round", fc="0.8")
     arrow_args = dict(arrowstyle="->")
 
-    # Measurements
-    if kernel_type == "Linear":
-        recall = sum(el in positive_tests for el in x_test[0:items_in_true_category]) / items_in_true_category
-        precision =  sum(el in positive_tests for el in x_test[0:items_in_true_category]) / (items_in_true_category + len(x_train))
-        if recall < 0.5:
-            recall = sum(el in negative_tests for el in x_test[0:items_in_true_category]) / items_in_true_category
-            precision =  sum(el in negative_tests for el in x_test[0:items_in_true_category]) / (items_in_true_category + len(x_train))
-            if outlier_state == 1:
-                plt.scatter(positive_tests[:,0], positive_tests[:,1], marker='x', color='black')    # Mark Outliers
-        else:
-            if outlier_state == 1:
-                plt.scatter(negative_tests[:,0], negative_tests[:,1], marker='x', color='black')    # Mark Outliers
+    # Measurements and Outlier Detection
+    recall = sum(el in positive_tests for el in x_test[0:items_in_true_category]) / items_in_true_category
+    precision =  sum(el in positive_tests for el in x_test[0:items_in_true_category]) / (items_in_true_category + items_in_train)
+    if 2*recall < 1:
+        recall = sum(el in negative_tests for el in x_test[0:items_in_true_category]) / items_in_true_category
+        precision =  sum(el in negative_tests for el in x_test[0:items_in_true_category]) / (items_in_true_category + items_in_train)
+        if outlier_state == 1:
+            plt.scatter(positive_tests[:,0], positive_tests[:,1], marker='x', color='black')    # Mark Outliers
     else:
-        recall = sum(el in positive_tests for el in x_test[0:items_in_true_category]) / items_in_true_category
-        precision =  sum(el in positive_tests for el in x_test[0:items_in_true_category]) / (items_in_true_category + len(x_train))
         if outlier_state == 1:
             plt.scatter(negative_tests[:,0], negative_tests[:,1], marker='x', color='black')    # Mark Outliers
 
@@ -221,7 +222,7 @@ def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, represent
         f1 = (2*recall*precision)/(recall+precision)
 
     plt.xlim((-25, 25)); plt.ylim((-25, 25))
-    plt.legend(([legend1_values_list[0].collections[0]]), ([legend1_keys_list[0]]), loc="upper left", prop=matplotlib.font_manager.FontProperties(size=11))
+    plt.legend(([legend1_values_list[0].collections[0]]), ([legend1_keys_list[0], "blue"]), loc="upper left", prop=matplotlib.font_manager.FontProperties(size=11))
 
     plt.xlabel("Recall: {}%,    Precision: {}%,    F1: {}%".format('{0:.2f}'.format(recall*100), '{0:.2f}'.format(precision*100), '{0:.2f}'.format(f1*100)))
     
@@ -236,13 +237,15 @@ def createFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int, represent
     canvas.get_tk_widget().pack(side="bottom", fill="both", expand=True, padx=item_xpos, pady=item_ypos)
     canvas._tkcanvas.pack(side="top", fill="both", expand=True, padx=item_xpos, pady=item_ypos)
 
+    return "{} {} {}".format('{0:.3f}'.format(f1),'{0:.3f}'.format(recall),'{0:.3f}'.format(precision))
+
 def emptyFigure(rightFrame: tk.Frame, item_xpos: int, item_ypos: int):
     global figure, canvas, toolbar
 
     figure = plt.figure(1)
     plt.title("Document Classification using One-Class SVM on Real Books Data Set")
     plt.xlim((-25, 25)); plt.ylim((-25, 25))
-    plt.ylabel("Training Set - WHITE : HARRY POTTER"); plt.xlabel("Testing Set - YELLOW : HARRY POTTER          RED : GAME OF THRONES")
+    plt.xlabel("Recall: {}%,    Precision: {}%,    F1: {}%".format('{0:.2f}'.format(0.0), '{0:.2f}'.format(0.0), '{0:.2f}'.format(0.0)))
     bbox_args = dict(boxstyle="round", fc="0.8")
     arrow_args = dict(arrowstyle="->")
     canvas = FigureCanvasTkAgg(figure, rightFrame); canvas.draw()

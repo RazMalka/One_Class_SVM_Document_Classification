@@ -94,7 +94,7 @@ def getBookSetKeywords(books: list):
 # GENERAL
 def getTrainSet(bookSet: int):
     if (bookSet == const.BookSet.HARRY_POTTER):
-        return const.books[113:166] # 214
+        return const.books[29:70] # 25% of training set
     if (bookSet == const.BookSet.GAME_OF_THRONES):
         return const.books[214:242] # 111
     return []
@@ -145,16 +145,16 @@ def r_frequency(keywords: list, books: list):
 # It is used as a weighting factor in searches of information retrieval and text mining.
 # The tf–idf value increases proportionally to the number of times a word appears in the document,
 # and is offset by the number of documents in the corpus that contain the word.
-def r_tfidf(books: list):
-    vectorizer = TfidfVectorizer()
-
-    booksVector = [str(getBook(b)) for b in books]
-    vectors = vectorizer.fit_transform(booksVector)
+def r_tfidf(vectorizer: TfidfVectorizer, books, onlyTransform: int):
+    dataBooksVector = [str(getBook(b)) for b in books]
+    if onlyTransform == 0:
+        x_data = vectorizer.fit_transform(dataBooksVector)
+    else:
+        x_data = vectorizer.transform(dataBooksVector)
     feature_names = vectorizer.get_feature_names()
-    dense = vectors.todense()
+    dense = x_data.toarray()
     denselist = dense.tolist()
-    df = pd.DataFrame(denselist, columns=feature_names)
-    return df.values    # actual conversion to numpy ndarray
+    return pd.DataFrame(denselist, columns=feature_names).values
 
 # Hadamard product representation - consists of the m dimensional vector, 
 # where the ith entry is the product of the frequency of the ith keyword in the document, 
