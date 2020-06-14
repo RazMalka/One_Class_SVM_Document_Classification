@@ -34,7 +34,27 @@ please notify the repository owner and they will be removed.
 ### Research Papers
 - [One-Class SVMs for Document Classification (Larry M. Manevitz, Malik Yousef)](http://www.jmlr.org/papers/volume2/manevitz01a/manevitz01a.pdf)
 - [One-Class Document Classification via Neural Networks (Larry M. Manevitz, Malik Yousef)](http://cs.haifa.ac.il/~manevitz/Publication/One-class%20document%20classification%20via%20Neural%20Networks.pdf)
-### Prerequisites
+### Installing and Running
+- Clone the Project
+```
+git clone https://github.com/RazMalka/SVM-DC.git
+cd SVM-dc
+```
+- Install Dependencies in Anaconda CLI
+```
+conda install -c anaconda nltk
+conda install -c anaconda sklearn
+```
+- Execute from CLI
+```
+cd ..
+conda init
+conda activate base
+python main.py
+```
+### Prerequisites and Libraries
+- VSCode (IDE)
+- Anaconda (Python3 Distribution)
 - Tkinter (GUI)
 - MatplotLib (Plotting)
 - Sklearn (SVM, Classification)
