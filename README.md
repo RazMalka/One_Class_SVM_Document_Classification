@@ -38,7 +38,7 @@ please notify the repository owner and they will be removed.
 - Clone the Project
 ```
 git clone https://github.com/RazMalka/SVM-DC.git
-cd SVM-dc
+cd SVM-DC
 ```
 - Install Dependencies in Anaconda CLI
 ```
