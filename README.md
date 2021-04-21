@@ -43,7 +43,7 @@ cd SVM-DC
 - Install Dependencies in Anaconda CLI
 ```
 conda install -c anaconda nltk
-conda install -c anaconda sklearn
+conda install -c anaconda scikit-learn
 ```
 - Execute from Anaconda CLI
 ```
