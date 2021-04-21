@@ -18,13 +18,18 @@ def cut(file_name: str):
             smallfile.write(line)
         if smallfile:
             smallfile.close()
-"""
-for file_name in const.books:
-    cut(file_name)
-    os.remove("docs/" + file_name + ".txt")
 
-print("CUT AND CLEAN Process finished --- %.6s seconds ---" % (time.time() - start_time))
-"""
-onlyfiles = [f for f in os.listdir("docs/") if os.path.isfile(os.path.join("docs/", f))]
-smallfile = open("filelist.txt", "w", encoding="utf8")
-smallfile.write(str(onlyfiles))
+def cut_clean():
+    for file_name in const.books:
+        cut(file_name)
+        os.remove("docs/" + file_name + ".txt")
+
+    print("CUT AND CLEAN Process finished --- %.6s seconds ---" % (time.time() - start_time))
+
+def listFiles():
+    onlyfiles = [f for f in os.listdir("docs/") if os.path.isfile(os.path.join("docs/", f))]
+    smallfile = open("filelist.txt", "w", encoding="utf8")
+    smallfile.write(str(onlyfiles))
+
+def main():
+    print("Call desired function down below")
